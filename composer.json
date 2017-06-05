@@ -1,0 +1,34 @@
+{
+    "authors": [
+        {
+            "homepage": "http://www.kshabazz.net/",
+            "name": "Khalifah Khalil Shabazz",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Whip\\Lash\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Whip\\Lash\\Tests\\": "test"
+        }
+    },
+    "description": "Whip web tools for validation.",
+    "license": "MIT",
+    "name": "kshabazz/whip-lash",
+    "require": {
+        "php": ">=7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.0",
+        "squizlabs/php_codesniffer": "^2.0",
+        "phpmd/phpmd": "*"
+    },
+    "scripts": {
+        "units": "phpunit",
+        "pcs": "./vendor/bin/phpcs -p --standard=PSR2 --severity=8 --colors src"
+    }
+}

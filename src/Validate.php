@@ -14,20 +14,20 @@ class Validate
         D_KEYS = 'dependencyKeys',
         V_KEY = 'validation';
 
-    /** @var string */
-    private $currentSubject;
+    /** @var array Input to be checked against constraints. */
+    private $input;
 
     /** @var array */
     private $subjects;
 
     public function addValidation(string $subject, array $dependencyKeys = [])
     {
-        $validation = new Validation();
-        $this->currentSubject = $subject;
-        $this->subjects[$this->currentSubject] = [
-            self::D_KEYS => $dependencyKeys,
-            self::V_KEY => $validation
-        ];
+        // Just values that will be used with certain constraints, such as Validation::equalTo
+        $dependencies = $this->extractValues($this->input, $dependencyKeys);
+
+        $validation = new Validation($subject, $dependencies);
+
+        $this->subjects[$subject] = $validation;
 
         return $validation;
     }
@@ -43,4 +43,6 @@ class Validate
 
         return $errors;
     }
+
+    private function extract
 }

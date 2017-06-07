@@ -4,11 +4,11 @@
  */
 
 /**
- * Class Validate
+ * Class Validator
  *
  * @package \Whip\Lash
  */
-class Validate
+class Validator
 {
     const
         D_KEYS = 'dependencyKeys',
@@ -37,8 +37,11 @@ class Validate
         $errors = [];
 
         foreach ($this->subjects as $subject => $stuff) {
+            $value = $input[$subject];
             $dependencyKeys = $stuff['dependencyKeys'];
             $validation = $stuff['validation'];
+
+            $validation->run($value, $dependencyKeys);
         }
 
         return $errors;

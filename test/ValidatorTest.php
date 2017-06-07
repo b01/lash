@@ -1,15 +1,15 @@
 <?php namespace Whip\Lash\Test;
 
 use PHPUnit\Framework\TestCase;
-use Whip\Lash\Validate;
+use Whip\Lash\Validator;
 
 /**
- * Class ValidateTest
+ * Class ValidatorTest
  *
  * @package \Whip\Tests
- * @coversDefaultClass \Whip\Lash\Validate
+ * @coversDefaultClass \Whip\Lash\Validator
  */
-class ValidateTest extends TestCase
+class ValidatorTest extends TestCase
 {
     /**
      * @covers ::validate
@@ -20,19 +20,19 @@ class ValidateTest extends TestCase
             'first_name' => 'McTest'
         ];
 
-        $validate = new Validate();
+        $validator = new Validator();
 
-        $validate->setInput($fixtureInput);
+        $validator->setInput($fixtureInput);
 
-        $validate->addValidation('account_name')
+        $validator->addValidation('account_name')
             ->length('name must be between 2-26 chars.', 2, 26)
             ->regExp('can only contain spaces & letters.', '/^[a-zA-Z]+$/g');
 
-        $validate->addValidation('balance')
-            ->length('name must be between 2-26 chars.', 2, 26)
+        $validator->addValidation('balance')
+            ->greaterThan('name must be between 2-26 chars.', 2, 26)
             ->regExp('can only contain spaces & letters.', '/^[a-zA-Z]+$/g');
 
-        $errors = $validate->validate();
+        $errors = $validator->validate();
 
         $this->assertCount(0, $errors);
     }

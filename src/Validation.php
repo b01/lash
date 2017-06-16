@@ -1,6 +1,8 @@
 <?php namespace Whip\Lash;
 /**
- * @see LICENSE.md
+ * Please see the included LICENSE.txt with this source code. If no
+ * LICENSE.txt was provided, then all rights for the source code in
+ * this file are reserved by Khalifah Khalil Shabazz
  */
 
 /**
@@ -8,28 +10,21 @@
  */
 class Validation
 {
-    /**
-     * Add string length validation.
-     *
-     * @param string $failMessage
-     * @param int $min
-     * @param int|null $max
-     * @return \Whip\Lash\Validation
-     */
-    public function length(string $failMessage, int $min, int $max = null) : Validation
-    {
-        return $this;
-    }
+    /** @var string The subject to be validated. */
+    private $subject;
+
+    /** @var array Values needed to perform validation. */
+    private $dependencies;
 
     /**
-     * Add regular expression validation.
+     * Validation constructor.
      *
-     * @param string $failMessage
-     * @param string $regExp
-     * @return \Whip\Lash\Validation
+     * @param string $subject
+     * @param array $dependencies
      */
-    public function regExp(string $failMessage, string $regExp) : Validation
+    public function __construct(string $subject, array $dependencies = null)
     {
-        return $this;
+        $this->subject = $subject;
+        $this->dependencies = $dependencies;
     }
 }

@@ -6,6 +6,7 @@
  */
 
 use Whip\Lash\Validators\Comparison;
+use Whip\Lash\Validators\File;
 use Whip\Lash\Validators\RegExp;
 use Whip\Lash\Validators\Strings;
 
@@ -20,6 +21,7 @@ use Whip\Lash\Validators\Strings;
 class Validator
 {
     use Comparison;
+    use File;
     use RegExp;
     use Strings;
 
@@ -32,11 +34,35 @@ class Validator
     /** @var string Subject index in the input. */
     private $key;
 
+    /** @var array Message to display when assertions fail. */
+    private $messages;
+
     /** @var mixed Value to assert. */
     private $subject;
 
-    /** @var array */
-    private $subjects;
+    /**
+     * Validator constructor.
+     */
+    public function __construct()
+    {
+        $this->errors = [];
+        $this->messages = [
+            'length' => 'input does not meet length',
+            'regExp' => 'input does not pass constraints set.',
+            'greaterThan' => '',
+            'lessThan' => '',
+        ];
+    }
+
+    public function __call($name, $arguments)
+    {
+        // TODO: Implement __call() method.
+        if (\array_key_exists($name, $this->validators)) {
+
+        }
+
+        throw new \Exception('Undefined method');
+    }
 
     /**
      * Value to assert meets some conditions.
@@ -61,62 +87,53 @@ class Validator
     }
 
     /**
-     * @param bool $isMet
-     * @param $failMessage
+     * @return array
      */
-    private function check(bool $isMet, $failMessage)
+    public function getErrors()
     {
-        if (!$isMet) {
-            $msg = is_string($failMessage) ? $failMessage : $this->getErrorMessage($this->method);
-            $this->errors[$this->key] = $msg;
-        }
+        return $this->errors;
+    }
+
+    /**
+     * Set error messages for assertions.
+     *
+     * @param array $messages
+     * @return \Whip\Lash\Validator
+     */
+    public function withErrorMessages(array $messages)
+    {
+        $this->messages = \array_merge($this->messages, $messages);
+
+        return $this;
     }
 
     /**
      * Set input to validate.
      *
      * @param array $input
+     * @return \Whip\Lash\Validator
      */
     public function withInput(array $input)
     {
         $this->input = $input;
+
+        return $this;
     }
 
     /**
-     * Run all validation.
-     *
-     * @param array $input
-     * @return array
+     * @param bool $isMet
+     * @param $failMessage
      */
-    public function validate(array $input)
+    private function check(string $method, bool $isMet, $failMessage)
     {
-        $errors = [];
-
-        foreach ($this->subjects as $subject => $stuff) {
-            $value = $input[$subject];
-            $dependencyKeys = $stuff['dependencyKeys'];
-            $validation = $stuff['validation'];
-
-            $validation->run($value, $dependencyKeys);
+        if (!$isMet) {
+            $msg = is_string($failMessage) ? $failMessage : $this->getErrorMessage($method);
+            $this->errors[$this->key] = $msg;
         }
-
-        return $errors;
     }
 
-    /**
-     * Extract values from an array.
-     *
-     * @param $input
-     * @param $keys
-     */
-    private function extractValues($input, $keys)
+    private function getErrorMessage()
     {
-        $values = [];
 
-        foreach ($keys as $key) {
-            if (array_key_exists($key, $input)) {
-                $values[$key] = $input[$key];
-            }
-        }
     }
 }

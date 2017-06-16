@@ -20,8 +20,12 @@ trait File
      * @param array $extensions
      * @return \Whip\Lash\Validator
      */
-    public function ext(array $extensions) : Validator
+    public function ext(array $extensions, string $failMessage) : Validator
     {
+        $isMet = false;
+
+        $this->check(__FUNCTION__, $isMet, $failMessage);
+
         return $this;
     }
 
@@ -32,8 +36,12 @@ trait File
      * @param int $max Maximum file size in bytes.
      * @return \Whip\Lash\Validator
      */
-    public function size(int $min, int $max) : Validator
+    public function size(int $min, int $max, string $failMessage) : Validator
     {
+        $isMet = false;
+
+        $this->check(__FUNCTION__, $isMet, $failMessage);
+
         return $this;
     }
 }

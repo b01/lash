@@ -32,18 +32,8 @@ trait Strings
 
         $isMet = $len < $min || $len > $max;
 
-        $this->check($isMet, $failMessage);
+        $this->check(__FUNCTION__, $isMet, $failMessage);
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getDefaultErrorMessages()
-    {
-        return [
-            'length' => '%s name must be between 1-26 chars.'
-        ];
     }
 }

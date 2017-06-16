@@ -14,7 +14,6 @@ use Whip\Lash\Validator;
  */
 trait RegExp
 {
-
     /**
      * Assert with a regular expression.
      *
@@ -39,8 +38,8 @@ trait RegExp
         }
 
         $isMet = (bool) $result === false;
-        
-        $this->check($isMet, $failMessage);
+
+        $this->check(__FUNCTION__, $isMet, $failMessage);
 
         return $this;
     }

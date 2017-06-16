@@ -25,7 +25,7 @@ trait Comparison
     {
         $isMet = $this->subject > $value;
 
-        $this->check($isMet, $failMessage);
+        $this->check(__FUNCTION__, $isMet, $failMessage);
 
         return $this;
     }
@@ -41,7 +41,7 @@ trait Comparison
     {
         $isMet = $this->subject < $value;
 
-        $this->check($isMet, $failMessage);
+        $this->check(__FUNCTION__, $isMet, $failMessage);
 
         return $this;
     }

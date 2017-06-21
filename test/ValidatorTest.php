@@ -72,15 +72,10 @@ class ValidatorTest extends TestCase
         $this->assertEquals($fixtureMsg[0], $actual[0]);
     }
 
-    /**
-     *
-     */
     public function testCanUseCustomValidation()
     {
-        $i = $fixtureInput = [
-            'first_name' => 'First',
-            'down_payment' => '10000',
-            'purchase_price' => '100000',
+        $fixtureInput = [
+            'first_name' => ''
         ];
 
         $validator = new Validator();
@@ -88,54 +83,9 @@ class ValidatorTest extends TestCase
         $validator->withInput($fixtureInput);
 
         $validator->assert('first_name')
-            ->length(1, 26, 'name must be between 1-26 chars.')
-            ->regExp('/^[a-zA-Z]+$/g', 'can only contain spaces & letters.');
+            ->custom(function (){
 
-        $validator->assert('down_payment')
-            ->greaterThan(0, 'your down payment must be greater than the purchase price.')
-            ->lessThan($i['purchase_price'], 'your down payment must be less than the purchase price.');
-
-        $actual = $validator->getErrors();
-
-        $this->assertCount(0, $actual);
-    }
-
-    public function testCanOverrideDefaultMessage()
-    {
-        $fixtureInput = [
-            'first_name' => ''
-        ];
-
-        $fixtureMsg = [
-            'length' => 'message override'
-        ];
-
-        $validator = new Validator();
-
-        $validator->withErrorMessages($fixtureMsg)
-            ->withInput($fixtureInput);
-
-        $validator->assert('first_name')
-            ->length(1, 26);
-
-        $actual = $validator->getErrors();
-
-        $this->assertEquals($fixtureMsg[0], $actual[0]);
-    }
-
-    public function testCanUseCustomValidation()
-    {
-        $fixtureInput = [
-            'first_name' => ''
-        ];
-
-        $validator = new Validator();
-
-        $validator->withErrorMessages($fixtureMsg)
-            ->withInput($fixtureInput);
-
-        $validator->assert('first_name')
-            ->length(1, 26);
+            });
 
         $actual = $validator->getErrors();
 

@@ -47,21 +47,22 @@ class Validator
     {
         $this->errors = [];
         $this->messages = [
-            'length' => 'input does not meet length',
-            'regExp' => 'input does not pass constraints set.',
-            'greaterThan' => '',
-            'lessThan' => '',
+            'length' => 'input does not meet string length requirements',
+            'regExp' => 'input does not pass set constraints.',
+            'greaterThan' => 'input is greater than expected.',
+            'lessThan' => 'input is less than expected.',
+            'size' => 'does not meet file size requirements.',
+            'ext' => 'does not pass extension constraints.',
         ];
     }
 
     public function __call($name, $arguments)
     {
-        // TODO: Implement __call() method.
         if (\array_key_exists($name, $this->validators)) {
 
         }
 
-        throw new \Exception('Undefined method');
+        throw new \Exception($name . ' method undefined.');
     }
 
     /**
@@ -102,7 +103,7 @@ class Validator
      */
     public function withErrorMessages(array $messages)
     {
-        $this->messages = \array_merge($this->messages, $messages);
+        $this->messages = $messages;
 
         return $this;
     }
@@ -132,8 +133,16 @@ class Validator
         }
     }
 
-    private function getErrorMessage()
+    /**
+     * @param string $method
+     * @return string
+     */
+    private function getErrorMessage(string $method)
     {
+        // We doe not fail gracefully here for 2 reasons:
+        // 1. Every assertion method should always have an error message in this array.
+        // 2. To alert the the developer ASAP when one is not present.
 
+        return $this->messages[$method];
     }
 }

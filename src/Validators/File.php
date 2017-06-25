@@ -5,8 +5,6 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
-use Whip\Lash\Validator;
-
 /**
  * Class File
  *
@@ -18,13 +16,17 @@ trait File
      * Verify a filename contains one of the expected extensions.
      *
      * @param array $extensions
-     * @return \Whip\Lash\Validator
+     * @param string $messageKey
+     * @return static
      */
-    public function ext(array $extensions, string $failMessage) : Validator
+    public function fileEtx(array $extensions, string $messageKey) : self
     {
-        $isMet = false;
+        $regex = '/(' . \implode('|', $extensions) . ')$/';
+        $pattern = \trim($regex, '|');
 
-        $this->check(__FUNCTION__, $isMet, $failMessage);
+        $isMet = \preg_match($pattern, $this->subject);
+
+        $this->check($isMet, $messageKey);
 
         return $this;
     }
@@ -34,13 +36,14 @@ trait File
      *
      * @param int $min Minimum file size in bytes.
      * @param int $max Maximum file size in bytes.
-     * @return \Whip\Lash\Validator
+     * @param string $messageKey
+     * @return static
      */
-    public function size(int $min, int $max, string $failMessage) : Validator
+    public function fileSize(int $min, int $max, string $messageKey) : self
     {
         $isMet = false;
 
-        $this->check(__FUNCTION__, $isMet, $failMessage);
+        $this->check($isMet, $messageKey);
 
         return $this;
     }

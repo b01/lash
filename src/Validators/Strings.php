@@ -5,8 +5,6 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
-use Whip\Lash\Validator;
-
 /**
  * Trait Strings
  *
@@ -15,24 +13,52 @@ use Whip\Lash\Validator;
 trait Strings
 {
     /**
-     * Add string length validation.
+     * Check string length.
      *
-     * @param string $failMessage
+     * @param string $messageKey
      * @param int $min
-     * @param int|null $max
-     * @return \Whip\Lash\Validator
+     * @param int $max
+     * @return static
      */
-    public function length(
-        int $min,
-        int $max = null,
-        string $failMessage = null
-    ) : Validator {
-
+    public function strLen(int $min, int $max, string $messageKey) : self
+    {
         $len = \strlen($this->subject);
 
-        $isMet = $len < $min || $len > $max;
+        $isMet = $len >= $min && $len <= $max;
 
-        $this->check(__FUNCTION__, $isMet, $failMessage);
+        $this->check($isMet, $messageKey);
+
+        return $this;
+    }
+
+    /**
+     * @param int $min
+     * @param string|null $messageKey
+     * @return static
+     */
+    public function minStrLen(int $min, string $messageKey) : self
+    {
+        $len = \strlen($this->subject);
+
+        $isMet = $len >= $min;
+
+        $this->check($isMet, $messageKey);
+
+        return $this;
+    }
+
+    /**
+     * @param int $max
+     * @param string|null $messageKey
+     * @return static
+     */
+    public function maxStrLen(int $max, string $messageKey) : self
+    {
+        $len = \strlen($this->subject);
+
+        $isMet = $len <= $max;
+
+        $this->check($isMet, $messageKey);
 
         return $this;
     }

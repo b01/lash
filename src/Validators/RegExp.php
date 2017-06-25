@@ -5,8 +5,6 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
-use Whip\Lash\Validator;
-
 /**
  * Trait RegExp
  *
@@ -18,13 +16,13 @@ trait RegExp
      * Assert with a regular expression.
      *
      * @param string $pattern
-     * @param string $failMessage
-     * @return \Whip\Lash\Validator
+     * @param string $messageKey Error message key to lookup in the list of error messages.
+     * @return static
      * @throws \Exception
      */
-    public function regExp(string $pattern, string $failMessage) : Validator
+    public function regExp(string $pattern, string $messageKey) : self
     {
-        $result = \preg_match($pattern, $this->subject);
+        $result = @\preg_match($pattern, $this->subject);
 
         if ($result === false) {
             // Get the name of the constant for the error code.
@@ -37,9 +35,9 @@ trait RegExp
             throw new \Exception($errorMessage);
         }
 
-        $isMet = (bool) $result === false;
+        $isMet = $result === 1;
 
-        $this->check(__FUNCTION__, $isMet, $failMessage);
+        $this->check($isMet, $messageKey);
 
         return $this;
     }

@@ -5,31 +5,26 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
+use Whip\Lash\Validation;
 use PHPUnit\Framework\TestCase;
-use Whip\Lash\Validator;
 
 /**
- * Class ValidatorTest
+ * Class ValidationTest
  *
- * @package \Whip\Tests
+ * @package \Whip\Lash\Test
  * @coversDefaultClass \Whip\Lash\Validator
  */
-class ValidatorTest extends TestCase
+class ValidationTest extends TestCase
 {
-    /** @var \Whip\Lash\Validator|\PHPUnit_Framework_MockObject_MockObject */
-    private $sut;
-
-    public function setUp()
-    {
-        $this->sut = $this->getMockForAbstractClass(Validator::class);
-    }
 
     /**
      * @covers ::__construct
      */
     public function testCanConstructWithNoConfiguration()
     {
-        $this->assertInstanceOf(Validator::class, $this->sut);
+        $actual = new Validation();
+
+        $this->assertInstanceOf(Validation::class, $actual);
     }
 
     /**
@@ -37,25 +32,31 @@ class ValidatorTest extends TestCase
      * @covers ::assert
      * @covers ::getErrors
      * @uses \Whip\Lash\Validator::__construct
+     * @uses \Whip\Lash\Validator::withErrorMessages
      * @uses \Whip\Lash\Validator::check
      */
     public function testCanSetInputToAssert()
     {
-        $fixtureInput = [
+        $validation = new Validation();
+
+        $nput = [
             'fname' => 'First',
         ];
-        $validator = $this->sut;
+        $messages = [
+            'fname' => 'name must be between 1-26 chars.',
+            'fname_re' => 'can only contain spaces & letters.'
+        ];
 
-        $validator->withInput($fixtureInput);
+        $validation->withInput($nput)
+            ->withErrorMessages($messages);
 
-        $validator->assert('fname')
-            ->custom(function () {
-                return true;
-            }, '');
+        $validation->assert('fname')
+            ->strLen(1, 26, 'fname')
+            ->regExp('/^[a-zA-Z]+$/', 'fname_re');
 
-        $actual = $validator->getErrors();
+        $errors = $validation->getErrors();
 
-        $this->assertCount(0, $actual);
+        $this->assertCount(0, $errors);
     }
 
     /**
@@ -78,17 +79,15 @@ class ValidatorTest extends TestCase
             $key => 'message override'
         ];
 
-        $validator = $this->sut;
+        $validation = new Validation();
 
-        $validator->withErrorMessages($fixtureMsgs)
+        $validation->withErrorMessages($fixtureMsgs)
             ->withInput($fixtureInput);
 
-        $validator->assert($key)
-            ->custom(function () {
-                return false;
-            }, $key);
+        $validation->assert($key)
+            ->strLen(1, 26, $key);
 
-        $actual = $validator->getErrors();
+        $actual = $validation->getErrors();
 
         $this->assertEquals($fixtureMsgs[$key], $actual[$key]);
     }
@@ -111,17 +110,17 @@ class ValidatorTest extends TestCase
         $fixtureMessages = [
             $key => 'custom message'
         ];
-        $validator = $this->sut;
+        $validation = new Validation();
 
-        $validator->withErrorMessages($fixtureMessages)
+        $validation->withErrorMessages($fixtureMessages)
             ->withInput($fixtureInput);
 
-        $validator->assert($key)
+        $validation->assert($key)
             ->custom(function () {
                 return false;
             }, $key);
 
-        $actual = $validator->getErrors();
+        $actual = $validation->getErrors();
 
         $this->assertEquals($fixtureMessages[$key], $actual[$key]);
     }

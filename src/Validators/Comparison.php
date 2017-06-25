@@ -5,8 +5,6 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
-use Whip\Lash\Validator;
-
 /**
  * Trait Comparison
  *
@@ -18,14 +16,14 @@ trait Comparison
      * Verify that the subject is greater than an expected value.
      *
      * @param $value
-     * @param string $failMessage
-     * @return \Whip\Lash\Validator
+     * @param string $messageKey
+     * @return static
      */
-    public function greaterThan($value, string $failMessage = null) : Validator
+    public function greaterThan($value, string $messageKey) : self
     {
         $isMet = $this->subject > $value;
 
-        $this->check(__FUNCTION__, $isMet, $failMessage);
+        $this->check($isMet, $messageKey);
 
         return $this;
     }
@@ -34,14 +32,14 @@ trait Comparison
      * Verify the subject is less than an expected value.
      *
      * @param $value
-     * @param string $failMessage
-     * @return \Whip\Lash\Validator
+     * @param string $messageKey
+     * @return static
      */
-    public function lessThan($value, string $failMessage = null) : Validator
+    public function lessThan($value, string $messageKey) : self
     {
         $isMet = $this->subject < $value;
 
-        $this->check(__FUNCTION__, $isMet, $failMessage);
+        $this->check($isMet, $messageKey);
 
         return $this;
     }

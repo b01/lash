@@ -25,10 +25,11 @@
     "require-dev": {
         "phpunit/phpunit": "^6.0",
         "squizlabs/php_codesniffer": "^2.0",
-        "phpmd/phpmd": "*"
+        "phpmd/phpmd": "^2.0"
     },
     "scripts": {
         "units": "phpunit",
-        "pcs": "./vendor/bin/phpcs -p --standard=PSR2 --severity=8 --colors src"
+        "pcs": "phpcs -p --standard=PSR2 --severity=8 --colors src",
+        "pmd": "phpmd src text cleancode --strict"
     }
 }

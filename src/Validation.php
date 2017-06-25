@@ -5,26 +5,18 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
+use Whip\Lash\Validators\Comparison;
+use Whip\Lash\Validators\File;
+use Whip\Lash\Validators\RegExp;
+use Whip\Lash\Validators\Strings;
+
 /**
  * Class Validation
  */
-class Validation
+final class Validation extends Validator
 {
-    /** @var string The subject to be validated. */
-    private $subject;
-
-    /** @var array Values needed to perform validation. */
-    private $dependencies;
-
-    /**
-     * Validation constructor.
-     *
-     * @param string $subject
-     * @param array $dependencies
-     */
-    public function __construct(string $subject, array $dependencies = null)
-    {
-        $this->subject = $subject;
-        $this->dependencies = $dependencies;
-    }
+    use Comparison;
+    use File;
+    use RegExp;
+    use Strings;
 }

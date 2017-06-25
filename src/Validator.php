@@ -5,11 +5,6 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
-use Whip\Lash\Validators\Comparison;
-use Whip\Lash\Validators\File;
-use Whip\Lash\Validators\RegExp;
-use Whip\Lash\Validators\Strings;
-
 /**
  * Class Validator
  *
@@ -18,27 +13,22 @@ use Whip\Lash\Validators\Strings;
  *
  * @package \Whip\Lash
  */
-class Validator
+abstract class Validator
 {
-    use Comparison;
-    use File;
-    use RegExp;
-    use Strings;
-
     /** @var array Errors messages added when validation fails. */
-    private $errors;
+    protected $errors;
 
     /** @var array Input to be checked against constraints. */
-    private $input;
+    protected $input;
 
     /** @var string Subject index in the input. */
-    private $key;
+    protected $key;
 
     /** @var array Message to display when assertions fail. */
-    private $messages;
+    protected $messages;
 
     /** @var mixed Value to assert. */
-    private $subject;
+    protected $subject;
 
     /**
      * Validator constructor.
@@ -46,23 +36,8 @@ class Validator
     public function __construct()
     {
         $this->errors = [];
-        $this->messages = [
-            'length' => 'input does not meet string length requirements',
-            'regExp' => 'input does not pass set constraints.',
-            'greaterThan' => 'input is greater than expected.',
-            'lessThan' => 'input is less than expected.',
-            'size' => 'does not meet file size requirements.',
-            'ext' => 'does not pass extension constraints.',
-        ];
-    }
-
-    public function __call($name, $arguments)
-    {
-        if (\array_key_exists($name, $this->validators)) {
-
-        }
-
-        throw new \Exception($name . ' method undefined.');
+        $this->input = [];
+        $this->messages = [];
     }
 
     /**
@@ -73,16 +48,32 @@ class Validator
      */
     public function assert(string $key)
     {
-        if (empty($this->input)) {
-            throw new \Exception('Attempting to assert with no input given. Please call withInput first.');
-        }
+//        if (!\array_key_exists($key, $this->input)) {
+//            throw new \Exception("{$key} was not found in the input array.");
+//        }
 
-        if (empty($key)) {
-            throw new \Exception('The assert first argument must ba a key from the input array.');
-        }
+        // We doe not fail gracefully here for the following reasons:
+        // 1. Every assertion key should be present in the input array.
+        // 2. It could be that some misspelled the key.
+        // 3. It could be that the validation is no longer needed.
+        // 4. It could be unintentional and just overlooked for removal.
+        // 5. Alerts the dev that its missing immediately.
 
         $this->key = $key;
         $this->subject = $this->input[$key];
+
+        return $this;
+    }
+
+    /**
+     * @param callable $validator
+     * @param string $messageKey
+     */
+    public function custom(callable $validator, string $messageKey)
+    {
+        $isMet = $validator($this->subject, $this->key, $this->input);
+
+        $this->check($isMet, $messageKey);
 
         return $this;
     }
@@ -122,27 +113,31 @@ class Validator
     }
 
     /**
+     * @param string $method
      * @param bool $isMet
-     * @param $failMessage
+     * @param string $messageKey
+     * @return void
      */
-    private function check(string $method, bool $isMet, $failMessage)
+    protected function check(bool $isMet, string $messageKey) : void
     {
         if (!$isMet) {
-            $msg = is_string($failMessage) ? $failMessage : $this->getErrorMessage($method);
+            $msg = $this->getErrorMessage($messageKey);
             $this->errors[$this->key] = $msg;
         }
     }
 
     /**
-     * @param string $method
-     * @return string
+     * Get an error message from the
+     * @param string $messageKey
+     * @return mixed
+     * @throws \Exception
      */
-    private function getErrorMessage(string $method)
+    protected function getErrorMessage(string $messageKey)
     {
         // We doe not fail gracefully here for 2 reasons:
-        // 1. Every assertion method should always have an error message in this array.
-        // 2. To alert the the developer ASAP when one is not present.
+        // 1. Every assertion should always be supplied a valid fail message via a key.
+        // 2. Alert the developer ASAP when one is not present.
 
-        return $this->messages[$method];
+        return $this->messages[$messageKey];
     }
 }

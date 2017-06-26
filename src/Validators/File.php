@@ -19,7 +19,7 @@ trait File
      * @param string $messageKey
      * @return static
      */
-    public function fileEtx(array $extensions, string $messageKey) : self
+    public function fileExt(array $extensions, string $messageKey) : self
     {
         $regex = '/(' . \implode('|', $extensions) . ')$/';
         $pattern = \trim($regex, '|');
@@ -32,7 +32,7 @@ trait File
     }
 
     /**
-     * Verify a file has the expected size range.
+     * Verify a file size is within (inclusive) an expected range.
      *
      * @param int $min Minimum file size in bytes.
      * @param int $max Maximum file size in bytes.
@@ -41,7 +41,9 @@ trait File
      */
     public function fileSize(int $min, int $max, string $messageKey) : self
     {
-        $isMet = false;
+        $stats = stat($this->subject);
+        $filesize = $stats['size'];
+        $isMet = $filesize >= $min && $filesize <= $max;
 
         $this->check($isMet, $messageKey);
 

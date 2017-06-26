@@ -8,8 +8,8 @@
 
 use Whip\Lash\Validators\File;
 use PHPUnit\Framework\TestCase;
-use const Whip\Tests\FIXTURES_DIR;
 
+use const Whip\Lash\Test\FIXTURES_DIR;
 /**
  * Class FileTest
  *
@@ -18,7 +18,7 @@ use const Whip\Tests\FIXTURES_DIR;
  */
 class FileTest extends TestCase
 {
-    /** @var \Whip\Lash\Validators\RegExp|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Whip\Lash\Validators\File|\PHPUnit_Framework_MockObject_MockObject */
     private $sut;
 
     public function setUp()
@@ -29,9 +29,9 @@ class FileTest extends TestCase
     }
 
     /**
-     * @covers ::fileEtx
+     * @covers ::fileExt
      */
-    public function testFileEtxCanPass()
+    public function testFileEndsWithTheExpectedExtension()
     {
         $this->sut->expects($this->once())
             ->method('check')
@@ -39,11 +39,39 @@ class FileTest extends TestCase
 
         $this->sut->subject = FIXTURES_DIR . 'file_1.txt';
 
-        $this->sut->fileEtx(['php'],  __FUNCTION__);
+        $this->sut->fileExt(['txt'],  __FUNCTION__);
     }
 
     /**
-     * @covers ::fileEtx
+     * @covers ::fileExt
+     */
+    public function testFileDoesNotEndWithTheExpectedExtension()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+
+        $this->sut->subject = FIXTURES_DIR . 'file_1.txt';
+
+        $this->sut->fileExt(['php'],  __FUNCTION__);
+    }
+
+    /**
+     * @covers ::fileExt
+     */
+    public function testFileContainsExtensionButDoesNotEndWithWithIt()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+
+        $this->sut->subject = FIXTURES_DIR . 'file_.php.txt';
+
+        $this->sut->fileExt(['php'],  __FUNCTION__);
+    }
+
+    /**
+     * @covers ::fileSize
      */
     public function testFileSizeCanPass()
     {

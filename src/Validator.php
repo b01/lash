@@ -118,7 +118,7 @@ abstract class Validator
      * @param string $messageKey
      * @return void
      */
-    protected function check(bool $isMet, string $messageKey) : void
+    protected function check(bool $isMet, string $messageKey)
     {
         if (!$isMet) {
             $msg = $this->getErrorMessage($messageKey);

@@ -48,9 +48,9 @@ abstract class Validator
      */
     public function assert(string $key)
     {
-//        if (!\array_key_exists($key, $this->input)) {
-//            throw new \Exception("{$key} was not found in the input array.");
-//        }
+        if (!\array_key_exists($key, $this->input)) {
+            throw new \Exception("{$key} was not found in the input array.");
+        }
 
         // We doe not fail gracefully here for the following reasons:
         // 1. Every assertion key should be present in the input array.

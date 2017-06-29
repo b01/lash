@@ -59,6 +59,32 @@ class ValidatorTest extends TestCase
     }
 
     /**
+     * @covers ::assert
+     * @covers ::getErrors
+     * @uses \Whip\Lash\Validator::__construct
+     * @uses \Whip\Lash\Validator::check
+     * @uses \Whip\Lash\Validator::withInput
+     * @expectedException \Exception
+     * @expectedExceptionMessage fname was not found in the input array.
+     */
+    public function testCannotAssertUndefinedIndex()
+    {
+        $fixtureInput = [];
+        $validator = $this->sut;
+
+        $validator->withInput($fixtureInput);
+
+        $validator->assert('fname')
+            ->custom(function () {
+                return true;
+            }, '');
+
+        $actual = $validator->getErrors();
+
+        $this->assertCount(0, $actual);
+    }
+
+    /**
      * @covers ::withErrorMessages
      * @covers ::check
      * @covers ::getErrorMessage

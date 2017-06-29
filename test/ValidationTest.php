@@ -89,7 +89,7 @@ class ValidationTest extends TestCase
 
         $actual = $validation->getErrors();
 
-        $this->assertEquals($fixtureMsgs[$key], $actual[$key]);
+        $this->assertEquals($fixtureMsgs[$key], $actual[$key][0]);
     }
 
     /**
@@ -122,6 +122,6 @@ class ValidationTest extends TestCase
 
         $actual = $validation->getErrors();
 
-        $this->assertEquals($fixtureMessages[$key], $actual[$key]);
+        $this->assertEquals($fixtureMessages[$key], $actual[$key][0]);
     }
 }

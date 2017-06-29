@@ -122,7 +122,7 @@ abstract class Validator
     {
         if (!$isMet) {
             $msg = $this->getErrorMessage($messageKey);
-            $this->errors[$this->key] = $msg;
+            $this->errors[$this->key][] = $msg;
         }
     }
 

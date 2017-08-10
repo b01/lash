@@ -147,4 +147,58 @@ class FileUploadTest extends TestCase
 
         $this->sut->uploadHasSize(1, 8,  __FUNCTION__);
     }
+
+    /**
+     * @covers ::uploadName
+     */
+    public function testWillPassAFileNameThatDoesMatchARegexFilter()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+
+        $this->mockUploadedFile->expects($this->once())
+            ->method('getClientFilename')
+            ->willReturn('test.png.tst');
+
+        $this->sut->subject = $this->mockUploadedFile;
+
+        $this->sut->uploadName('/^[a-z.]+$/',  __FUNCTION__);
+    }
+
+    /**
+     * @covers ::uploadName
+     */
+    public function testWillNotPassAFileNameThatDoesNotMatchARegexFilter()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+
+        $this->mockUploadedFile->expects($this->once())
+            ->method('getClientFilename')
+            ->willReturn('test.png.tst');
+
+        $this->sut->subject = $this->mockUploadedFile;
+
+        $this->sut->uploadName('/^[A-Z]+$/',  __FUNCTION__);
+    }
+
+    /**
+     * @covers ::uploadName
+     */
+    public function testWillNotIncludeFullPath()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+
+        $this->mockUploadedFile->expects($this->once())
+            ->method('getClientFilename')
+            ->willReturn('C:\\Temp\\test.png.tst');
+
+        $this->sut->subject = $this->mockUploadedFile;
+
+        $this->sut->uploadName('/^[a-z.]+$/',  __FUNCTION__);
+    }
 }

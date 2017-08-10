@@ -32,6 +32,22 @@ trait FileUpload
     }
 
     /**
+     * @param string $pattern
+     * @param string $messageKey
+     * @return static
+     */
+    public function uploadName(string $pattern, string $messageKey) : self
+    {
+        $filename = basename($this->subject->getClientFilename());
+
+        $isMet = \preg_match($pattern, $filename);
+
+        $this->check($isMet, $messageKey);
+
+        return $this;
+    }
+
+    /**
      * Verify a file size is within (inclusive) an expected range.
      *
      * @param int $min Minimum file size in bytes.

@@ -151,4 +151,92 @@ class ValidatorTest extends TestCase
 
         $this->assertEquals($fixtureMessages[$key], $actual[$key][0]);
     }
+
+    /**
+     * @covers ::assertOptional
+     * @uses \Whip\Lash\Validator::__construct
+     * @uses \Whip\Lash\Validator::withErrorMessages
+     * @uses \Whip\Lash\Validator::withInput
+     * @uses \Whip\Lash\Validator::custom
+     * @uses \Whip\Lash\Validator::getErrors
+     * @uses \Whip\Lash\Validator::check
+     */
+    public function testCanAssertOptionalFieldWhenPresent()
+    {
+        $key = 'ofield';
+        $fixtureInput = [
+            $key => 'hasValue'
+        ];
+        $fixtureMessages = [
+            $key => 'custom message'
+        ];
+
+        $this->sut->withErrorMessages($fixtureMessages)
+            ->withInput($fixtureInput)
+            ->assertOptional($key)
+            ->custom(function () {
+                return false;
+            }, $key);
+
+        $actual = $this->sut->getErrors();
+
+        $this->assertEquals($fixtureMessages[$key], $actual[$key][0]);
+    }
+
+    /**
+     * @covers ::assertOptional
+     * @uses \Whip\Lash\Validator::__construct
+     * @uses \Whip\Lash\Validator::withInput
+     * @uses \Whip\Lash\Validator::custom
+     * @uses \Whip\Lash\Validator::getErrors
+     * @uses \Whip\Lash\Validator::check
+     */
+    public function testWillNotAssertAnOptionalFieldWhenMissing()
+    {
+        $key = 'ofield';
+        $fixtureInput = [];
+
+        $this->sut->withInput($fixtureInput)
+            ->assertOptional($key)
+            ->custom(function () {
+                return false;
+            }, $key);
+
+        $actual = $this->sut->getErrors();
+
+        $this->assertEmpty($actual);
+    }
+
+    /**
+     * @covers ::assertOptional
+     * @uses \Whip\Lash\Validator::__construct
+     * @uses \Whip\Lash\Validator::withErrorMessages
+     * @uses \Whip\Lash\Validator::withInput
+     * @uses \Whip\Lash\Validator::assert
+     * @uses \Whip\Lash\Validator::check
+     * @uses \Whip\Lash\Validator::custom
+     * @uses \Whip\Lash\Validator::getErrors
+     */
+    public function testWillNotAssertAnOptionalFieldWhenPresentButEmpty()
+    {
+        $key = 'ofield';
+        $fixtureInput = [
+            $key => ''
+        ];
+        $fixtureMessages = [
+            $key => 'custom message'
+        ];
+        $validator = $this->sut;
+
+        $validator->withErrorMessages($fixtureMessages)
+            ->withInput($fixtureInput)
+            ->assertOptional($key)
+            ->custom(function () {
+                return false;
+            }, $key);
+
+        $actual = $validator->getErrors();
+
+        $this->assertEmpty($actual);
+    }
 }

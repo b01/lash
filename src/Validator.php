@@ -82,7 +82,8 @@ abstract class Validator
     public function assertOptional(string $key)
     {
         $this->isOptional = true;
-        $this->isMissing = !\array_key_exists($key, $this->input);
+        $this->isMissing = !\array_key_exists($key, $this->input)
+            || empty($this->input[$key]);
 
         if ($this->isMissing === false) {
             $this->assert($key);

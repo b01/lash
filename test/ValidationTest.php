@@ -124,4 +124,54 @@ class ValidationTest extends TestCase
 
         $this->assertEquals($fixtureMessages[$key], $actual[$key][0]);
     }
+
+    /**
+     * @covers ::assertOptional
+     * @uses \Whip\Lash\Validator::__construct
+     * @uses \Whip\Lash\Validator::check
+     */
+    public function testCanAssertOptionalFieldWhenPresent()
+    {
+        $key = 'ofield';
+        $fixtureInput = [
+            $key => ''
+        ];
+        $fixtureMessages = [
+            $key => 'custom message'
+        ];
+        $validation = new Validation();
+
+        $validation->withErrorMessages($fixtureMessages)
+            ->withInput($fixtureInput)
+            ->assertOptional($key)
+            ->custom(function () {
+                return false;
+            }, $key);
+
+        $actual = $validation->getErrors();
+
+        $this->assertEquals($fixtureMessages[$key], $actual[$key][0]);
+    }
+
+    /**
+     * @covers ::assertOptional
+     * @uses \Whip\Lash\Validator::__construct
+     * @uses \Whip\Lash\Validator::check
+     */
+    public function testWillNotAssertAnOptionalFieldWhenMissing()
+    {
+        $key = 'ofield';
+        $fixtureInput = [];
+        $validation = new Validation();
+
+        $validation->withInput($fixtureInput)
+            ->assertOptional($key)
+            ->custom(function () {
+                return false;
+            }, $key);
+
+        $actual = $validation->getErrors();
+
+        $this->assertEmpty($actual);
+    }
 }

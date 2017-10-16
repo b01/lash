@@ -21,6 +21,12 @@ abstract class Validator
     /** @var array Input to be checked against constraints. */
     protected $input;
 
+    /** @var bool Inidicates that the key is missing from the input array. */
+    protected $isMissing;
+
+    /** @var bool Indicates that asserting is optional when not present in the input. */
+    protected $isOptional;
+
     /** @var string Subject index in the input. */
     protected $key;
 
@@ -44,7 +50,8 @@ abstract class Validator
      * Value to assert meets some conditions.
      *
      * @param string $key
-     * @return $this
+     * @return \Whip\Lash\Validator
+     * @throws \Exception When the key is not found in the input.
      */
     public function assert(string $key)
     {
@@ -52,7 +59,7 @@ abstract class Validator
             throw new \Exception("{$key} was not found in the input array.");
         }
 
-        // We doe not fail gracefully here for the following reasons:
+        // Do not fail gracefully here for the following reasons:
         // 1. Every assertion key should be present in the input array.
         // 2. It could be that some misspelled the key.
         // 3. It could be that the validation is no longer needed.
@@ -61,6 +68,25 @@ abstract class Validator
 
         $this->key = $key;
         $this->subject = $this->input[$key];
+        // All checks must be met.
+        $this->isOptional = false;
+        $this->isMissing = false;
+
+        return $this;
+    }
+
+    /**
+     * @param string $key
+     * @return $this
+     */
+    public function assertOptional(string $key)
+    {
+        $this->isOptional = true;
+        $this->isMissing = !\array_key_exists($key, $this->input);
+
+        if ($this->isMissing === false) {
+            $this->assert($key);
+        }
 
         return $this;
     }
@@ -68,6 +94,7 @@ abstract class Validator
     /**
      * @param callable $validator
      * @param string $messageKey
+     * @return \Whip\Lash\Validator
      */
     public function custom(callable $validator, string $messageKey)
     {
@@ -120,7 +147,7 @@ abstract class Validator
      */
     protected function check(bool $isMet, string $messageKey)
     {
-        if (!$isMet) {
+        if (!$isMet && !($this->isOptional && $this->isMissing)) {
             $msg = $this->getErrorMessage($messageKey);
             $this->errors[$this->key][] = $msg;
         }
@@ -134,7 +161,7 @@ abstract class Validator
      */
     protected function getErrorMessage(string $messageKey)
     {
-        // We doe not fail gracefully here for 2 reasons:
+        // Do not fail gracefully here for 2 reasons:
         // 1. Every assertion should always be supplied a valid fail message via a key.
         // 2. Alert the developer ASAP when one is not present.
 

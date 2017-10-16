@@ -77,7 +77,7 @@ abstract class Validator
 
     /**
      * @param string $key
-     * @return $this
+     * @return \Whip\Lash\Validator
      */
     public function assertOptional(string $key)
     {

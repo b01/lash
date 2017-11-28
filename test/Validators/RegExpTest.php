@@ -65,4 +65,94 @@ class RegExpTest extends TestCase
 
         $this->sut->regExp('/[a-z/', __FUNCTION__);
     }
+
+    /**
+     * @covers ::email
+     * @uses \Whip\Lash\Validators\RegExp::regExp
+     */
+    public function testCanPassEmail()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+
+        $this->sut->subject = 'me@example.com';
+
+        $this->sut->email(__FUNCTION__);
+    }
+
+    /**
+     * @covers ::email
+     * @uses \Whip\Lash\Validators\RegExp::regExp
+     */
+    public function testCanFailEmailWhenMissingAtSign()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+
+        $this->sut->subject = 'meexample.com';
+
+        $this->sut->email(__FUNCTION__);
+    }
+
+    /**
+     * @covers ::name
+     * @uses \Whip\Lash\Validators\RegExp::regExp
+     */
+    public function testCanPassName()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+
+        $this->sut->subject = 'jane';
+
+        $this->sut->name(__FUNCTION__);
+    }
+
+    /**
+     * @covers ::name
+     * @uses \Whip\Lash\Validators\RegExp::regExp
+     */
+    public function testCanFailNameWhenHasNumber()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+
+        $this->sut->subject = 'jane1';
+
+        $this->sut->name(__FUNCTION__);
+    }
+
+    /**
+     * @covers ::username
+     * @uses \Whip\Lash\Validators\RegExp::regExp
+     */
+    public function testCanPassUsername()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+
+        $this->sut->subject = 'jane12';
+
+        $this->sut->username(__FUNCTION__);
+    }
+
+    /**
+     * @covers ::username
+     * @uses \Whip\Lash\Validators\RegExp::regExp
+     */
+    public function testCanFailUsernameWhenSymbol()
+    {
+        $this->sut->expects($this->once())
+            ->method('check')
+            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+
+        $this->sut->subject = 'jane12!';
+
+        $this->sut->username(__FUNCTION__);
+    }
 }

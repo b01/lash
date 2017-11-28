@@ -13,6 +13,39 @@
 trait RegExp
 {
     /**
+     * @param string|null $messageKey
+     * @return static
+     */
+    public function email(string $messageKey) : self
+    {
+        // see: https://www.w3.org/TR/2012/WD-html-markup-20120320/input.email.html
+        $exp = '/^[a-zA-Z0-9.!#$%&’*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/';
+
+        return $this->regExp($exp, $messageKey);
+    }
+
+    /**
+     * @param string|null $messageKey
+     * @return static
+     */
+    public function name(string $messageKey) : self
+    {
+        return $this->regExp('/^[a-zA-Z]+$/', $messageKey);
+    }
+
+    /**
+     * @param string|null $messageKey
+     * @return static
+     */
+    public function username(string $messageKey) : self
+    {
+        return $this->regExp(
+            '/^[a-zA-Z][a-zA-Z0-9]{3,26}$/',
+            $messageKey
+        );
+    }
+
+    /**
      * Assert with a regular expression.
      *
      * @param string $pattern

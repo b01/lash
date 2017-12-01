@@ -8,6 +8,7 @@
 use Whip\Lash\Validators\Comparison;
 use Whip\Lash\Validators\File;
 use Whip\Lash\Validators\FileUpload;
+use Whip\Lash\Validators\Password;
 use Whip\Lash\Validators\RegExp;
 use Whip\Lash\Validators\Strings;
 
@@ -19,6 +20,7 @@ final class Validation extends Validator
     use Comparison;
     use File;
     use FileUpload;
+    use Password;
     use RegExp;
     use Strings;
 }

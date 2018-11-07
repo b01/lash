@@ -23,63 +23,48 @@ class ComparisonTest extends TestCase
     public function setUp()
     {
         $this->sut = $this->getMockBuilder(Comparison::class)
-            ->setMethods(['check'])
             ->getMockForTrait();
     }
 
     /**
-     * @covers ::greaterThan
+     * @covers ::gt
      */
     public function testGreaterThanPasses()
     {
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
-
         $this->sut->subject = 1;
 
-        $this->sut->greaterThan(0, __FUNCTION__);
+        $actual = $this->sut->gt(1, 0);
+
+        $this->assertTrue($actual);
     }
 
     /**
-     * @covers ::greaterThan
+     * @covers ::gt
      */
     public function testGreaterThanFails()
     {
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $actual = $this->sut->gt(1, 2);
 
-        $this->sut->subject = 1;
-
-        $this->sut->greaterThan(2, __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
-     * @covers ::lessThan
+     * @covers ::lt
      */
     public function testLessThanPasses()
     {
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+        $actual = $this->sut->lt(1, 2);
 
-        $this->sut->subject = 1;
-
-        $this->sut->lessThan(2, __FUNCTION__);
+        $this->assertTrue($actual);
     }
 
     /**
-     * @covers ::lessThan
+     * @covers ::lt
      */
     public function testLessThanFails()
     {
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $actual = $this->sut->lt(1, 0);
 
-        $this->sut->subject = 1;
-
-        $this->sut->lessThan(0, __FUNCTION__);
+        $this->assertFalse($actual);
     }
 }

@@ -23,7 +23,6 @@ class PasswordTest extends TestCase
     public function setUp()
     {
         $this->sut = $this->getMockBuilder(Password::class)
-            ->setMethods(['check'])
             ->getMockForTrait();
     }
 
@@ -34,14 +33,11 @@ class PasswordTest extends TestCase
     {
         $passwordFixture = 'abcdefg1!';
 
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+        $input = ['confirm' => $passwordFixture];
 
-        $this->sut->input = ['confirm' => $passwordFixture];
-        $this->sut->subject = $passwordFixture;
+        $actual = $this->sut->pass($passwordFixture, 'confirm', $input);
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $this->assertTrue($actual);
     }
 
     /**
@@ -51,14 +47,11 @@ class PasswordTest extends TestCase
     {
         $passwordFixture = 'a';
 
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $input = ['confirm' => $passwordFixture];
 
-        $this->sut->input = ['confirm' => $passwordFixture];
-        $this->sut->subject = $passwordFixture;
+        $actual = $this->sut->pass($passwordFixture, 'confirm', $input);
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
@@ -68,14 +61,11 @@ class PasswordTest extends TestCase
     {
         $passwordFixture = 'abcdefg!';
 
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $input = ['confirm' => $passwordFixture];
 
-        $this->sut->input = ['confirm' => $passwordFixture];
-        $this->sut->subject = $passwordFixture;
+        $actual = $this->sut->pass($passwordFixture, 'confirm', $input);
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
@@ -85,14 +75,11 @@ class PasswordTest extends TestCase
     {
         $passwordFixture = 'abcdefg1';
 
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $input = ['confirm' => $passwordFixture];
 
-        $this->sut->input = ['confirm' => $passwordFixture];
-        $this->sut->subject = $passwordFixture;
+        $actual = $this->sut->pass($passwordFixture, 'confirm', $input);
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
@@ -101,8 +88,10 @@ class PasswordTest extends TestCase
      */
     public function testCanThrowException()
     {
-        $this->sut->input = [];
+        $input = [];
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $actual = $this->sut->pass('wqre', 'confirm', $input);
+
+        $this->assertFalse($actual);
     }
 }

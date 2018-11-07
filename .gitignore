@@ -2,8 +2,11 @@
 #------------
 /.idea/
 /.phpunit/
+/cache/
+/test-results/
 /vendor/
 
 # Files
 #------
-/composer.lock
+docs/PROJECT_VERSION
+docs/SAMI_VERSION

@@ -12,116 +12,551 @@ use PHPUnit\Framework\TestCase;
  * Class ValidationTest
  *
  * @package \Whip\Lash\Test
- * @coversDefaultClass \Whip\Lash\Validator
+ * @coversDefaultClass \Whip\Lash\Validation
  */
 class ValidationTest extends TestCase
 {
+    /** @var array Fixed rules to test. */
+    private $fixtureRules;
+
+    public function setUp()
+    {
+        $this->fixtureRules = [
+            'numericValue' => [
+                'validator' => 'range',
+                'err' => 'enter a numeric value',
+                'constraint' => [1, 100]
+            ],
+            'stringValue' => [
+                'validator' => 'stringLen',
+                'err' => 'enter a least 4 characters.',
+                'constraint' => 4
+            ],
+            'regexValue' => [
+                'validator' => 'regex',
+                'err' => 'enter a value that matches the pattern',
+                'constraint' => '/^[a-z]{1,3}$/'
+            ],
+            'setValue' => [
+                'validator' => 'inSet',
+                'err' => 'enter a value in the set',
+                'constraint' => ['item1', 'item2', 'item3']
+            ],
+        ];
+    }
 
     /**
      * @covers ::__construct
      */
-    public function testCanConstructWithNoConfiguration()
+    public function testCanInitialize()
     {
-        $actual = new Validation();
+        $sut = new Validation();
 
-        $this->assertInstanceOf(Validation::class, $actual);
+        $this->assertInstanceOf(Validation::class, $sut);
     }
 
     /**
-     * @covers ::withInput
-     * @covers ::assert
-     * @covers ::getErrors
-     * @uses \Whip\Lash\Validator::__construct
-     * @uses \Whip\Lash\Validator::withErrorMessages
-     * @uses \Whip\Lash\Validator::check
+     * @covers ::addRule
+     * @uses \Whip\Lash\Validation::__construct
+     * @expectedException \Exception
      */
-    public function testCanSetInputToAssert()
+    public function testCannotAddRuleWithInvalidName()
     {
-        $validation = new Validation();
+        $sut = new Validation();
 
-        $nput = [
-            'fname' => 'First',
-        ];
-        $messages = [
-            'fname' => 'name must be between 1-26 chars.',
-            'fname_re' => 'can only contain spaces & letters.'
-        ];
-
-        $validation->withInput($nput)
-            ->withErrorMessages($messages);
-
-        $validation->assert('fname')
-            ->strLen(1, 26, 'fname')
-            ->regExp('/^[a-zA-Z]+$/', 'fname_re');
-
-        $errors = $validation->getErrors();
-
-        $this->assertCount(0, $errors);
+        $sut->addRule('_badName', 'stringLen', 1);
     }
 
     /**
-     * @covers ::withErrorMessages
-     * @covers ::check
-     * @covers ::getErrorMessage
-     * @covers ::getErrors
-     * @uses \Whip\Lash\Validator::withInput
-     * @uses \Whip\Lash\Validator::assert
-     */
-    public function testCanOverrideDefaultMessage()
-    {
-        $key = 'fname';
-
-        $fixtureInput = [
-            $key => ''
-        ];
-
-        $fixtureMsgs = [
-            $key => 'message override'
-        ];
-
-        $validation = new Validation();
-
-        $validation->withErrorMessages($fixtureMsgs)
-            ->withInput($fixtureInput);
-
-        $validation->assert($key)
-            ->strLen(1, 26, $key);
-
-        $actual = $validation->getErrors();
-
-        $this->assertEquals($fixtureMsgs[$key], $actual[$key][0]);
-    }
-
-    /**
-     * @covers ::custom
-     * @uses \Whip\Lash\Validator::__construct
-     * @uses \Whip\Lash\Validator::withErrorMessages
-     * @uses \Whip\Lash\Validator::withInput
-     * @uses \Whip\Lash\Validator::assert
-     * @uses \Whip\Lash\Validator::check
-     * @uses \Whip\Lash\Validator::getErrors
+     * @covers ::addRule
+     * @covers ::addCustomValidator
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::getRule
      */
     public function testCanUseCustomValidation()
     {
         $key = 'fname';
-        $fixtureInput = [
-            $key => ''
-        ];
-        $fixtureMessages = [
-            $key => 'custom message'
-        ];
         $validation = new Validation();
 
-        $validation->withErrorMessages($fixtureMessages)
-            ->withInput($fixtureInput);
+        $validation->addRule($key, $key, 'test1');
 
-        $validation->assert($key)
-            ->custom(function () {
-                return false;
-            }, $key);
+        $validation->addCustomValidator($key,
+            function ($value, $constraint) {
+                return $value === 1 && $constraint === 'test1';
+            });
 
-        $actual = $validation->getErrors();
+        $actual = $validation->validate([$key => 1]);
 
-        $this->assertEquals($fixtureMessages[$key], $actual[$key][0]);
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::range
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @uses \Whip\Lash\Validation::getRule
+     */
+    public function testCanValidateNumericValueIsWithinInRange()
+    {
+        $sut = new Validation();
+
+        $sut->addRules($this->fixtureRules);
+
+        $actual = $sut->validate(['numericValue' => 21]);
+
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::range
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @uses \Whip\Lash\Validation::getRule
+     */
+    public function testCanInvalidateNumericValueIsOutOfRange()
+    {
+        $sut = new Validation();
+
+        $sut->addRules($this->fixtureRules);
+
+        $actual = $sut->validate(['numericValue' => -1]);
+
+        $this->assertFalse($actual);
+    }
+
+    /**
+     * @covers ::stringLen
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @uses \Whip\Lash\Validation::getRule
+     */
+    public function testCanValidateString()
+    {
+        $sut = new Validation();
+
+        $sut->addRules($this->fixtureRules);
+
+        $actual = $sut->validate(['stringValue' => 'test']);
+
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::stringLen
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @uses \Whip\Lash\Validation::getRule
+     */
+    public function testCanInvalidateString()
+    {
+        $sut = new Validation();
+
+        $sut->addRules($this->fixtureRules);
+
+        $actual = $sut->validate(['stringValue' => '']);
+
+        $this->assertFalse($actual);
+    }
+
+    /**
+     * @covers ::inSet
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @uses \Whip\Lash\Validation::getRule
+     */
+    public function testCanValidateStringAsPartOfASet()
+    {
+        $sut = new Validation();
+
+        $sut->addRules($this->fixtureRules);
+
+        $actual = $sut->validate(['setValue' => 'item1']);
+
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::inSet
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @uses \Whip\Lash\Validation::getRule
+     */
+    public function testCanInvalidateAStringIsNotInASet()
+    {
+        $sut = new Validation();
+
+        $sut->addRules($this->fixtureRules);
+
+        $actual = $sut->validate(['setValue' => 'item1']);
+
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::regex
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     */
+    public function testCanValidateAValuePassesARegularExpression()
+    {
+        $sut = new Validation();
+
+        $sut->addRules($this->fixtureRules);
+
+        $actual = $sut->validate(['regexValue' => 'tst']);
+
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::regex
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     */
+    public function testCanInvalidateAValueFailsARegularExpression()
+    {
+        $sut = new Validation();
+
+        $sut->addRules($this->fixtureRules);
+
+        $actual = $sut->validate(['setValue' => 'item1']);
+
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::regex
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @expectedException \Exception
+     */
+    public function testCanInvalidateABadRegularExpression()
+    {
+        $sut = new Validation();
+
+        $sut->addRule('badRegExp', 'regex', '/^[a-Z/', 'I is bad');
+
+        $sut->validate(['badRegExp' => 'item1']);
+    }
+
+    /**
+     * @covers ::addRules
+     * @uses \Whip\Lash\Validation::__construct
+     */
+    public function testCanAddMultipleRules()
+    {
+        $sut = new Validation();
+
+        $actual = $sut->addRules($this->fixtureRules);
+
+        $this->assertEquals(count($this->fixtureRules), $actual);
+    }
+
+    /**
+     * @covers ::addRule
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::validate
+     */
+    public function testCanAddASingleRule()
+    {
+        $sut = new Validation();
+
+        $actual = $sut->addRule('test', 'range', [1,5]);
+        $actual2 = $sut->validate(['test' => 2]);
+
+        $this->assertTrue($actual);
+        $this->assertTrue($actual2);
+    }
+
+    /**
+     * @covers ::addCustomValidator
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::validate
+     */
+    public function testCanAddCustomValidator()
+    {
+        $sut = new Validation();
+
+        $sut->addCustomValidator(
+            'customValidation',
+            function ($value, callable $constraint) {
+                return $constraint($value);
+            }
+        );
+
+        $actual2 = $sut->addRule(
+            'testName',
+            'customValidation',
+            function ($value) {
+                return $value === 2;
+            }
+        );
+
+        $actual3 = $sut->validate(['testName' => 2]);
+
+        $this->assertTrue($actual2);
+        $this->assertTrue($actual3);
+    }
+
+    /**
+     * @covers ::getRule
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::validate
+     * @expectedException \Exception
+     * @expectedExceptionMessage No rule found matching the name
+     */
+    public function testCannotGetRule()
+    {
+        $sut = new Validation();
+
+        $sut->validate(['testName' => 2]);
+    }
+
+    /**
+     * @covers ::getRule
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::validate
+     */
+    public function testCanGetRule()
+    {
+        $sut = new Validation();
+
+        $sut->addRule('testRule', 'stringLen', 2);
+
+        $actual = $sut->validate(['testRule' => '12']);
+
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::getErrors
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::getRule
+     * @uses \Whip\Lash\Validation::validate
+     */
+    public function testCanGetErrors()
+    {
+        $errorFixture = 'got an error';
+
+        $sut = new Validation();
+
+        $sut->addRule('gotError', 'stringLen', 2, $errorFixture);
+
+        $sut->validate(['gotError' => '1']);
+
+        $actual = $sut->getErrors();
+
+        $this->assertEquals($actual['gotError'], $errorFixture);
+    }
+
+    /**
+     * @covers ::throwOnMissingKey
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @expectedException \Exception
+     * @expectedExceptionMessage Missing "validator" key at rule
+     */
+    public function testMissingRequiredRuleKeyValidator()
+    {
+        $sut = new Validation();
+
+        $sut->addRules([
+            'missingAllRequiredKeys' => [
+                Validation::RULE_KEY_CONSTRAINT => 1,
+                Validation::RULE_KEY_ERR_MSG => 'fake msg 1'
+            ]
+        ]);
+    }
+
+    /**
+     * @covers ::throwOnMissingKey
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @expectedException \Exception
+     * @expectedExceptionMessage Missing "constraint" key at rule
+     */
+    public function testMissingRequiredRuleKeyConstraint()
+    {
+        $sut = new Validation();
+
+        $sut->addRules([
+            'missingAllRequiredKeys' => [
+                Validation::RULE_KEY_VALIDATOR => 'stringLen',
+                Validation::RULE_KEY_ERR_MSG => 'fake msg 1'
+            ]
+        ]);
+    }
+
+    /**
+     * @covers ::throwOnMissingKey
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     * @expectedException \Exception
+     * @expectedExceptionMessage Missing "err" key at rule
+     */
+    public function testMissingRequiredRuleKeyErr()
+    {
+        $sut = new Validation();
+
+        $sut->addRules([
+            'missingAllRequiredKeys' => [
+                Validation::RULE_KEY_VALIDATOR => 'stringLen',
+                Validation::RULE_KEY_CONSTRAINT => 1
+            ]
+        ]);
+    }
+
+    /**
+     * @covers ::throwOnMissingKey
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addRules
+     */
+    public function testNoRequiredRuleKeyAreMissing()
+    {
+        $sut = new Validation();
+
+        $actual = $sut->addRules([
+            'missingAllRequiredKeys' => [
+                Validation::RULE_KEY_VALIDATOR => 'stringLen',
+                Validation::RULE_KEY_CONSTRAINT => 1,
+                Validation::RULE_KEY_ERR_MSG => 'err message'
+            ]
+        ]);
+
+        $this->assertEquals(1, $actual);
+    }
+
+    /**
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @expectedException \Exception
+     * @expectedExceptionMessage Could not find the validator "fakeValidator"
+     */
+    public function testMissingValidator()
+    {
+        $sut = new Validation();
+
+        $sut->addRule('ks1', 'fakeValidator', 0);
+
+        $sut->validate(['ks1' => 1]);
+    }
+
+    /**
+     * @covers ::addRule
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::validate
+     * @uses \Whip\Lash\Validation::getRule
+     * @uses \Whip\Lash\Validation::gt
+     */
+    public function testCanRemoveErrorMessage()
+    {
+        $sut = new Validation();
+
+        $sut->addRule('messageRemoval', 'gt', 0, '-');
+
+        $sut->validate(['messageRemoval' => -1]);
+
+        $actual = $sut->getErrors();
+
+        $this->assertEmpty($actual['messageRemoval']);
+    }
+
+    /**
+     * @covers ::addRule
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::validate
+     * @uses \Whip\Lash\Validation::getRule
+     * @uses \Whip\Lash\Validation::lt
+     */
+    public function testCannotAccidentallyRemovedErrorMessage()
+    {
+        $name = 'forgotErrorMessage';
+        $sut = new Validation();
+
+        $sut->addRule($name, 'lt', 0, '');
+
+        $sut->validate([$name => 1]);
+
+        $actual = $sut->getErrors();
+
+        $this->assertContains(
+            \sprintf(Validation::DEFAULT_ERR_MSG, $name, 1, 'lt', 0),
+            $actual['forgotErrorMessage']
+        );
+    }
+
+    /**
+     * @covers ::validate
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::getRule
+     * @uses \Whip\Lash\Validation::lt
+     */
+    public function testCanMaskValueInErrorMessage()
+    {
+        $name = 'maskedValue';
+
+        $sut = new Validation();
+
+        $sut->addRule($name, 'lt', 0, '%2$s', true);
+
+        $sut->validate([$name => 1]);
+
+        $actual = $sut->getErrors();
+
+        $this->assertEquals('*', $actual[$name]);
+    }
+
+    /**
+     * @covers ::addRulesByIndex
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::getRule
+     * @uses \Whip\Lash\Validation::gt
+     * @uses \Whip\Lash\Validation::validate
+     */
+    public function testCanAddRulesByIndex()
+    {
+        $name = 'value1';
+        $name2 = 'value2';
+
+        $sut = new Validation();
+
+        $actual = $sut->addRulesByIndex([
+            $name => ['gt', 0, 'error 1'],
+            $name2 => ['lt', 0, 'error 2']
+        ]);
+
+        $actual2 = $sut->validate([$name => 1, $name2 => -1]);
+
+        $this->assertEquals(2, $actual);
+        $this->assertTrue($actual2);
     }
 }

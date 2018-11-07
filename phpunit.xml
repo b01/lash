@@ -3,10 +3,8 @@
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutChangesToGlobalState="true"
          colors="true"
-         coverage-text="true"
          beStrictAboutOutputDuringTests="true"
          forceCoversAnnotation="true"
-         mapTestClassNameToCoveredClassName="true"
          verbose="true">
     <testsuites>
         <testsuite name="All">
@@ -14,15 +12,13 @@
         </testsuite>
     </testsuites>
     <filter>
-        <blacklist>
-            <directory>.</directory>
-        </blacklist>
         <whitelist>
             <directory suffix=".php">src</directory>
         </whitelist>
     </filter>
     <logging>
         <log type="coverage-text" target="php://stdout" showUncoveredFiles="false" />
-        <log type="coverage-clover" target=".phpunit/coverage.xml" />
+        <log type="coverage-clover" target="test-results/phpunit/coverage.xml" />
+        <log type="junit" target="test-results/phpunit/junit.xml" />
     </logging>
 </phpunit>

@@ -19,49 +19,38 @@ trait FileUpload
      * @param string $messageKey
      * @return static
      */
-    public function uploadHasExt(array $extensions, string $messageKey) : self
+    public function uploadHasExt($value, array $constraint) : bool
     {
-        $regex = '/(' . \implode('|', $extensions) . ')$/';
+        $regex = '/(' . \implode('|', $constraint) . ')$/';
         $pattern = \trim($regex, '|');
 
-        $isMet = \preg_match($pattern, $this->subject->getClientFilename());
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return \preg_match($pattern, $value->getClientFilename());
     }
 
     /**
+     *
+     * @param $value
      * @param string $pattern
-     * @param string $messageKey
-     * @return static
+     * @return bool
      */
-    public function uploadName(string $pattern, string $messageKey) : self
+    public function uploadName($value, string $pattern) : bool
     {
-        $filename = basename($this->subject->getClientFilename());
+        $filename = \basename($value->getClientFilename());
 
-        $isMet = \preg_match($pattern, $filename);
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return \preg_match($pattern, $filename) === 1;
     }
 
     /**
      * Verify a file size is within (inclusive) an expected range.
      *
-     * @param int $min Minimum file size in bytes.
-     * @param int $max Maximum file size in bytes.
-     * @param string $messageKey
-     * @return static
+     * @param $value
+     * @param array $constraint
+     * @return bool
      */
-    public function uploadHasSize(int $min, int $max, string $messageKey) : self
+    public function uploadHasSize($value, array $constraint) : bool
     {
-        $fileSize = $this->subject->getSize();
-        $isMet = $fileSize >= $min && $fileSize <= $max;
+        $fileSize = $value->getSize();
 
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return $fileSize >= $constraint[0] && $fileSize <= $constraint[1];
     }
 }

@@ -13,159 +13,66 @@
  *
  * @package \Whip\Lash
  */
-abstract class Validator
+interface Validator
 {
-    /** @var array Errors messages added when validation fails. */
-    protected $errors;
-
-    /** @var array Input to be checked against constraints. */
-    protected $input;
-
-    /** @var bool Inidicates that the key is missing from the input array. */
-    protected $isMissing;
-
-    /** @var bool Indicates that asserting is optional when not present in the input. */
-    protected $isOptional;
-
-    /** @var string Subject index in the input. */
-    protected $key;
-
-    /** @var array Message to display when assertions fail. */
-    protected $messages;
-
-    /** @var mixed Value to assert. */
-    protected $subject;
-
     /**
-     * Validator constructor.
-     */
-    public function __construct()
-    {
-        $this->errors = [];
-        $this->input = [];
-        $this->messages = [];
-    }
-
-    /**
-     * Value to assert meets some conditions.
+     * Add your own custom validation.
      *
-     * @param string $key
-     * @return \Whip\Lash\Validator
-     * @throws \Exception When the key is not found in the input.
-     */
-    public function assert(string $key)
-    {
-        if (!\array_key_exists($key, $this->input)) {
-            throw new \Exception("{$key} was not found in the input array.");
-        }
-
-        // Do not fail gracefully here for the following reasons:
-        // 1. Every assertion key should be present in the input array.
-        // 2. It could be that some misspelled the key.
-        // 3. It could be that the validation is no longer needed.
-        // 4. It could be unintentional and just overlooked for removal.
-        // 5. Alerts the dev that its missing immediately.
-
-        $this->key = $key;
-        $this->subject = $this->input[$key];
-        // All checks must be met.
-        $this->isOptional = false;
-        $this->isMissing = false;
-
-        return $this;
-    }
-
-    /**
-     * @param string $key
-     * @return \Whip\Lash\Validator
-     */
-    public function assertOptional(string $key)
-    {
-        $this->isOptional = true;
-        $this->isMissing = !\array_key_exists($key, $this->input)
-            || empty($this->input[$key]);
-
-        if ($this->isMissing === false) {
-            $this->assert($key);
-        }
-
-        return $this;
-    }
-
-    /**
+     * @param string $name
      * @param callable $validator
-     * @param string $messageKey
-     * @return \Whip\Lash\Validator
+     * @return static
      */
-    public function custom(callable $validator, string $messageKey)
-    {
-        $isMet = $validator($this->subject, $this->key, $this->input);
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
-    }
+    public function addCustomValidator(string $name, callable $validator) : Validator;
 
     /**
-     * @return array
-     */
-    public function getErrors()
-    {
-        return $this->errors;
-    }
-
-    /**
-     * Set error messages for assertions.
+     * Add a rule for a named value (ex, a name can be a field in a form post).
      *
-     * @param array $messages
-     * @return \Whip\Lash\Validator
-     */
-    public function withErrorMessages(array $messages)
-    {
-        $this->messages = $messages;
-
-        return $this;
-    }
-
-    /**
-     * Set input to validate.
+     * NOTE: Rules can contain the following keys:
+     *  * self::RULE_KEY_VALIDATOR - The name of a validator. Will throw an
+     *  \Exception when missing.
+     *  * self::RULE_KEY_CONSTRAINT - The matching constraint fo the validator.
+     *  Will throw an \Exception when missing.
+     *  * self::RULE_KEY_ERR - An error message when the value does not meet the
+     *  constraint. Will use the default error message for the validator when
+     *  missing.
      *
-     * @param array $input
-     * @return \Whip\Lash\Validator
-     */
-    public function withInput(array $input)
-    {
-        $this->input = $input;
-
-        return $this;
-    }
-
-    /**
-     * @param string $method
-     * @param bool $isMet
-     * @param string $messageKey
-     * @return void
-     */
-    protected function check(bool $isMet, string $messageKey)
-    {
-        if (!$isMet && !($this->isOptional && $this->isMissing)) {
-            $msg = $this->getErrorMessage($messageKey);
-            $this->errors[$this->key][] = $msg;
-        }
-    }
-
-    /**
-     * Get an error message from the
-     * @param string $messageKey
-     * @return mixed
+     * @param string $name
+     * @param string $validator
+     * @param mixed $constraints
+     * @param string $err
+     * @return bool
      * @throws \Exception
      */
-    protected function getErrorMessage(string $messageKey)
-    {
-        // Do not fail gracefully here for 2 reasons:
-        // 1. Every assertion should always be supplied a valid fail message via a key.
-        // 2. Alert the developer ASAP when one is not present.
+    public function addRule(
+        string $name,
+        string $validator,
+        $constraints,
+        string $err
+    ) : bool;
 
-        return $this->messages[$messageKey];
-    }
+    /**
+     * Add multiple rules to validate named values.
+     *
+     * NOTE: When adding rules this way, the "err" key in the rules is REQUIRED.
+     *
+     * @see $this->addRule()
+     * @param array $rules
+     * @return int
+     * @throws \Exception
+     */
+    public function addRules(array $rules) : int;
+
+    /**
+     * Get the errors for fields that failed validation.stringLen
+     *
+     * @return array
+     */
+    public function getErrors() : array;
+
+    /**
+     * @param array $values
+     * @return bool
+     * @throws \Exception
+     */
+    public function validate(array $values) : bool;
 }

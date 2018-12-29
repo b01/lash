@@ -32,6 +32,7 @@
     "scripts": {
         "units": "phpunit",
         "pcs": "phpcs -p --standard=PSR2 --severity=8 --colors src",
-        "pmd": "phpmd src text cleancode --strict"
+        "pmd": "phpmd src text cleancode --strict",
+        "sami": "sami.phar update ./sami-config.php"
     }
 }

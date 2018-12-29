@@ -19,7 +19,7 @@ trait Password
      * @return bool
      * @throws \Exception
      */
-    public function pass(string $value, string $constraint, & $input) : bool
+    public function password(string $value, string $constraint, & $input) : bool
     {
         if (!\array_key_exists($constraint, $input)) {
             throw new \Exception(

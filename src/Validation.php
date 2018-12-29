@@ -5,37 +5,42 @@
  * this file are reserved by Khalifah Khalil Shabazz.
  */
 
+use Whip\Lash\Validators\Basic;
 use Whip\Lash\Validators\Comparison;
 use Whip\Lash\Validators\File;
 use Whip\Lash\Validators\FileUpload;
 use Whip\Lash\Validators\Password;
+use Whip\Lash\Validators\RegExp;
 
 /**
  * Class Validation
+ * If you need to mock this class, just mock the \Whip\Lash\Validator interface,
+ * which should server the same purpose.
  *
  * @package \Whip\Lash
  */
-class Validation implements Validator
+final class Validation implements Validator
 {
+    use Basic, File, RegExp {
+        RegExp::regex insteadof Basic, File;
+    }
     use Comparison;
-    use File;
     use FileUpload;
     use Password;
 
-    const RULE_IDX_VALIDATOR = '0';
+    const RULE_IDX_CUSTOM = '0';
     const RULE_IDX_CONSTRAINT = '1';
     const RULE_IDX_ERR_MSG = '2';
     const RULE_IDX_MASK = '3';
+    const RULE_IDX_VALIDATOR = '0';
 
     const RULE_KEY_CONSTRAINT = 'constraint';
+    const RULE_KEY_CUSTOM = 'custom';
     const RULE_KEY_ERR_MSG = 'err';
     const RULE_KEY_MASK = 'mask';
     const RULE_KEY_VALIDATOR = 'validator';
     const RULE_NAME_REGEX = '/^[a-zA-Z][a-zA-Z0-9-._]*$/';
     const DEFAULT_ERR_MSG = 'Could not validate %1$s = %2$s against validator "%3$s" with a constraint of "%4$s".';
-
-    // see: https://www.w3.org/TR/2012/WD-html-markup-20120320/input.email.html
-    const RULE_EMAIL_REGEX = '/^[a-zA-Z0-9.!#$%&’*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/';
 
     /** @var array A custom validation method. */
     private $customValidators;
@@ -114,9 +119,19 @@ class Validation implements Validator
             $i++;
             $this->throwOnMissingKey($rule, $i);
 
+            $validator = \array_key_exists(self::RULE_KEY_CUSTOM, $rule)
+                ? $rule[self::RULE_KEY_CUSTOM]
+                : $rule[self::RULE_KEY_VALIDATOR];
+
+            // side-effect of allowing custom validation to be adding
+            // when using this method.
+            if (\array_key_exists(self::RULE_KEY_CUSTOM, $rule)) {
+                $this->addCustomValidator($validator, $rule[self::RULE_KEY_CONSTRAINT]);
+            }
+
             $added = $this->addRule(
                 $name,
-                $rule[self::RULE_KEY_VALIDATOR],
+                $validator,
                 $rule[self::RULE_KEY_CONSTRAINT],
                 $rule[self::RULE_KEY_ERR_MSG],
                 \array_key_exists(self::RULE_KEY_MASK, $rule)
@@ -131,27 +146,16 @@ class Validation implements Validator
     }
 
     /**
-     * Add rules via an index instead of a key. The index has a specific order:
-     * 0 = self::RULE_IDX_VALIDATOR
-     * 1 = self::RULE_IDX_CONSTRAINT
-     * 2 = self::RULE_IDX_ERR_MSG
-     * 3 = self::RULE_IDX_MASK
-     *
-     * WARNING: Please make sure your elements are in the correct order or
-     * proper validation cannot be guaranteed.
-     *
-     * @param array $rules
-     * @return int
-     * @throws \Exception
+     * @inheritdoc
      */
-    public function addRulesByIndex(array $rules)
+    public function addRulesByIndex(array $rules) : int
     {
         $counter = 0;
         $i = -1;
 
         foreach ($rules as $name => $rule) {
             $i++;
-            $this->throwOnMissingIndex($rule, $i);
+            $this->throwOnMissingIndex($rule, $i, $name);
 
             $added = $this->addRule(
                 $name,
@@ -267,40 +271,13 @@ class Validation implements Validator
     }
 
     /**
-     * @param string $value
-     * @param string $constraint
-     * @return bool
-     * @throws \Exception
-     */
-    private function regex(string $value, string $constraint)
-    {
-        $rV = @\preg_match($constraint, $value);
-
-        if ($rV === false) {
-            // Get the name of the constant for the error code.
-            $prceConst = \get_defined_constants(true)['pcre'];
-            $lastErr = \preg_last_error();
-            $errorConstName = \array_flip($prceConst)[$lastErr];
-            $message = 'There may is a problem with the regex, and the'
-                . " subject cannot be validated.\n"
-                . "\tregex error: {$errorConstName}\n"
-                . "\tsubject: {$value}\n"
-                . "\tpattern: {$constraint}";
-
-            throw new \Exception($message);
-        }
-
-        return  $rV === 1;
-    }
-
-    /**
      * Validate a string is as long as a specified length.
      *
      * @param string $value
      * @param int $constraint
      * @return bool
      */
-    private function stringLen(string $value, int $constraint)
+    private function length(string $value, int $constraint)
     {
         return \strlen($value) >= $constraint;
     }
@@ -315,7 +292,8 @@ class Validation implements Validator
         $message = 'Missing "%s" key at rule index %s';
 
         // TODO: Dry this code out.
-        if (!\array_key_exists(self::RULE_KEY_VALIDATOR, $rule)) {
+        if (!\array_key_exists(self::RULE_KEY_VALIDATOR, $rule)
+            && !\array_key_exists(self::RULE_KEY_CUSTOM, $rule)) {
             $message = \sprintf($message, self::RULE_KEY_VALIDATOR, $i);
             throw new \Exception($message);
         }
@@ -336,13 +314,13 @@ class Validation implements Validator
      * @param int $i
      * @throws \Exception
      */
-    private function throwOnMissingIndex(array $rule, int $i) : void
+    private function throwOnMissingIndex(array $rule, int $i, $name) : void
     {
         $message = 'Missing "%s" index at rule index %s';
 
         // TODO: Dry this code out.
         if (!\array_key_exists(self::RULE_IDX_VALIDATOR, $rule)) {
-            $message = \sprintf($message, self::RULE_IDX_VALIDATOR, $i);
+            $message = \sprintf($message, self::RULE_IDX_VALIDATOR, $name);
             throw new \Exception($message);
         }
 

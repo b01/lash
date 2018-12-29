@@ -13,6 +13,18 @@
 trait Comparison
 {
     /**
+     * Verify that the value is equal to an expected value.
+     *
+     * @param $value
+     * @param $constraint
+     * @return bool
+     */
+    public function eq($value, $constraint) : bool
+    {
+        return $value === $constraint;
+    }
+
+    /**
      * Verify that the value is greater than an expected value.
      *
      * @param $value

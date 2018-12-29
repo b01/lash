@@ -12,6 +12,8 @@
  */
 trait File
 {
+    use RegExp;
+
     /**
      * Verify a filename contains one of the expected extensions.
      *

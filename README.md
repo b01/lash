@@ -9,18 +9,20 @@ or storing in internal systems.
 
 ## Table Of Contents
 
-* [Description](#description)
-* [Concepts and Principals](#concepts-and-principals)
-* [Validation](#how-to-use-validation)
+* [1. Overview](#1-Overview)
+  * [Concepts and Principals](#concepts-and-principals)
+  * [Definitions](#definitions)
+* [2. Writing Validation](#2-writing-validation)
   * [Using Regular Expressions](#using-regular-expressions)
   * [Mask Values in Error Messages](#mask-values-in-error-messages)
+* [3. Built-in Validators](#3-built-in-validators)
   * [Logic Operators](#logic-operators)
-  * [Add A Custom Validator](#add-a-custom-validator)
-  * [Adding Multiple Rules](#adding-multiple-rules)
-* [Definitions](#definitions)
+  * [String Checking](#string-checking)
+* [4. Add A Custom Validator](#4-add-a-custom-validator)
+* [5. Adding Multiple Rules](#5-adding-multiple-rules)
 * [API Reference](docs/Whip/Lash/Validation.html#Rules)
 
-## Description
+## 1. Overview
 
 Lash validation is built around the flow of passing in an array of values as
 input and getting a pass/fail response as output. That the user interface and
@@ -37,7 +39,8 @@ custom validation rules (at run time). This allows Lash to be scalable and
 maintainable. It should also lend itself to building more complex validation
 services for a multitude of applications.
 
-## Concepts and Principals
+### Concepts and Principals
+
 * This library should not try to solve for everyone needs. Rather provide a
   base system that is flexible enough to be built upon to aid in solving lots
   of different or even some edge scenarios.
@@ -50,7 +53,8 @@ services for a multitude of applications.
 * This library should NOT contain a lot of bloat so that end-user gets way more
   than what they need.
 
-## Definitions
+### Definitions
+
 * Named-value - An element in an array where the key is the name and the value
   is a scalar value.
 * Rule - Is an array element, where the key is the name of a named-value and
@@ -59,15 +63,14 @@ services for a multitude of applications.
   array of values (passed in the the validate method), which performs
   assertions to ensure the value meets the constraint.
 
-## How To Use Validation
-Examples:
+## 2. Writing Validation
 
 ### Using Regular Expressions
 
-Use a regular expression to validate a string meet a format constraint.
-
+Example 2.1 Using a regular expression to validate a string.
 ```php
-use Whip\Lash\Validation
+<?php
+use Whip\Lash\Validation;
 
 // Start a new validation object.
 $validation = new Validation();
@@ -90,15 +93,22 @@ if (!$valid) {
 
 ### Mask Values in Error Messages
 
-Mask the value in the error messages returned.
-Error messages are run through the \sprintf function and passed the value,
-name, validator, and constraint (in that order). Which allow for very specific
-error messaging. However that may be times when you want the value to be masked
-If you add the "mask" field to the rule it will replace the value with a single
-asterisk in the error message output. For example:
+Error messages are run through the
+[\sprintf](http://php.net/manual/en/function.sprintf.php) function and passed
+the value, name, validator, and constraint (in that order). Which allow for 
+very specific error messaging. In order to mask values in error messages set
+the "mask" parameter or field to `true` when adding a rule; it will replace the
+value with a single asterisk in the error message output. For example, a social
+security number like `999-99-9999` would translate to `*`. See Example 2.2 for
+a code demonstration.
 
+Turning on masking will mask the only the value; the name, validator, and
+constraint will be left alone.
+
+Example 2.2 Replace the value with a single asterisk
 ```php
-use Whip\Lash\Validation
+<?php
+use Whip\Lash\Validation;
 
 $validation = new Validation();
 
@@ -107,7 +117,7 @@ $validation->addRule(
     'regex', 
     '/^\d{3}-\d{2}-\d{4}$/',
     'Invalid social security number: %1$s',
-    'mask' => true
+    true
 );
 
 $valid = $validation->validate([ 'ssn' => '000-00-000a' ]);
@@ -115,56 +125,116 @@ $valid = $validation->validate([ 'ssn' => '000-00-000a' ]);
 $errors = $validation->getErrors();
 
 \print_r($errors);
-// Output:
-array(
+```
+
+Output:
+```bash
+$ php -f mask-example.php
+array (
     'ssn' => 'Invalid social security number: *'
 )
 ```
 
+Without the last param `true` the social security number would be shown in the
+error message. Note you can also write an error message that does not show the
+value in the first place.
+
+## 3. Built-in Validators
+
 ### Logic Operators
 
+| Validator | Description              |
+|---------- |--------------------------|
+| lt        | less than the constraint |
+| gt        | greater than constraint  |
+| eq        | equal to the constraint  |
+
+### Logic Operators
+
+| Validator | Description                                             |
+|---------- |---------------------------------------------------------|
+| length    | compare the length of the string against the constraint |
+| custom    | an function that will receive the input and constraint as parameters |
+| pass      | compare a string against a pattern and equate it to the |
+|           | constraint, which should be another field in the input  |                                 |
+
+Example:
 ```php
+<?php
+$validation = new \Whip\Lash\Validation();
+
 $validation->addRule('age', 'gt', 18, 'you must be 18 or older');
 
 $valid = $validation->validate([
-    'age' => 44,
+    'age' => 16,
 ]);
 
 if (!$valid) {
     \error_log(
-        'These fields failed validation: ' . \print_r($errors, true)
+        'These fields failed validation: '
+        . \print_r($validation->getErrors(), true)
     );
 }
 ```
 
-### Add A Custom Validator
+### 4. Add A Custom Validator
 
 Custom validators will give you the ability to truly scrutinize input against
-your own standard. Take full advantage of anything PHP has to offer to validate
-your input.
+your own standard. Take full advantage of anything PHP has to offer to 
+validate your input. There are two ways to add custom validators; The first 
+is well suited for making reusable rules, and the second for programmatically
+adding rules ont at time. However, don't let these docs limit the
+possibilities. They are merely suggestion that may work well for most cases.
+
+#### Method 1
+
+**An example using the Validation::addRules**
+
 ```php
+<?php
+$rules = [
+    'validator' => 'custom',
+    'constraint' => function ($input) {// Must return a boolean.
+        return ( $input['num1'] + $input['num2'] ) > 10;
+    },
+    'err' => 'The sum of %1%d + %2$d is not greater than 10.'
+];
+
+$isValid = (new Validation())
+    ->addRules($rules)
+    ->validate(['num1' => 1, 'num2' => 2]);
+```
+
+#### Method 2
+
+An example of adding rules programmatically, which could be turned into a 
+template for creating scripts that add rules at run-time.
+
+```php
+<?php
 $validation = new Validation();
 $carValidator = 'carMakers';
 
+// A custom validator takes a name, and callable.
 $validation->addCustomValidator(
     $carValidator,
     function ($value, $constraint) {
         return !\in_array($value, $constraint);
-    }, 
-    $message
+    }
 );
 
+// Add a rule to use the custom validator.
 $validation->addRule(
     'carMake', 
     $carValidator,
-    ['ford', 'gm', 'chrysler'], 
+    ['ford', 'gm', 'chrysler'],
     'your car is no good sir'
 );
 
 $actual = $validation->validate(['car' => 'chrysler ']);
 ```
 
-### Adding Multiple Rules
+### 5. Adding Multiple Rules
 
 Once you have all your validators setup, it time to start adding multiple
 rules. The [Validation::addRules](docs/Whip/Lash/Validation.html#addRules)

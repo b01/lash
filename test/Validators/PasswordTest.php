@@ -27,7 +27,7 @@ class PasswordTest extends TestCase
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      */
     public function testCanPass()
     {
@@ -35,13 +35,13 @@ class PasswordTest extends TestCase
 
         $input = ['confirm' => $passwordFixture];
 
-        $actual = $this->sut->pass($passwordFixture, 'confirm', $input);
+        $actual = $this->sut->password($passwordFixture, 'confirm', $input);
 
         $this->assertTrue($actual);
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      */
     public function testCanFailWhenNotLongEnough()
     {
@@ -49,13 +49,13 @@ class PasswordTest extends TestCase
 
         $input = ['confirm' => $passwordFixture];
 
-        $actual = $this->sut->pass($passwordFixture, 'confirm', $input);
+        $actual = $this->sut->password($passwordFixture, 'confirm', $input);
 
         $this->assertFalse($actual);
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      */
     public function testCanFailWhenNotContainNumber()
     {
@@ -63,13 +63,13 @@ class PasswordTest extends TestCase
 
         $input = ['confirm' => $passwordFixture];
 
-        $actual = $this->sut->pass($passwordFixture, 'confirm', $input);
+        $actual = $this->sut->password($passwordFixture, 'confirm', $input);
 
         $this->assertFalse($actual);
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      */
     public function testCanFailWhenNotContainSymbol()
     {
@@ -77,20 +77,20 @@ class PasswordTest extends TestCase
 
         $input = ['confirm' => $passwordFixture];
 
-        $actual = $this->sut->pass($passwordFixture, 'confirm', $input);
+        $actual = $this->sut->password($passwordFixture, 'confirm', $input);
 
         $this->assertFalse($actual);
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      * @expectedException \Exception
      */
     public function testCanThrowException()
     {
         $input = [];
 
-        $actual = $this->sut->pass('wqre', 'confirm', $input);
+        $actual = $this->sut->password('wqre', 'confirm', $input);
 
         $this->assertFalse($actual);
     }

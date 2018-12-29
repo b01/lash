@@ -28,7 +28,7 @@ class ValidationTest extends TestCase
                 'constraint' => [1, 100]
             ],
             'stringValue' => [
-                'validator' => 'stringLen',
+                'validator' => 'length',
                 'err' => 'enter a least 4 characters.',
                 'constraint' => 4
             ],
@@ -130,7 +130,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * @covers ::stringLen
+     * @covers ::length
      * @covers ::validate
      * @uses \Whip\Lash\Validation::__construct
      * @uses \Whip\Lash\Validation::addRule
@@ -149,7 +149,7 @@ class ValidationTest extends TestCase
     }
 
     /**
-     * @covers ::stringLen
+     * @covers ::length
      * @covers ::validate
      * @uses \Whip\Lash\Validation::__construct
      * @uses \Whip\Lash\Validation::addRule
@@ -342,7 +342,7 @@ class ValidationTest extends TestCase
     {
         $sut = new Validation();
 
-        $sut->addRule('testRule', 'stringLen', 2);
+        $sut->addRule('testRule', 'length', 2);
 
         $actual = $sut->validate(['testRule' => '12']);
 
@@ -362,7 +362,7 @@ class ValidationTest extends TestCase
 
         $sut = new Validation();
 
-        $sut->addRule('gotError', 'stringLen', 2, $errorFixture);
+        $sut->addRule('gotError', 'length', 2, $errorFixture);
 
         $sut->validate(['gotError' => '1']);
 
@@ -405,7 +405,7 @@ class ValidationTest extends TestCase
 
         $sut->addRules([
             'missingAllRequiredKeys' => [
-                Validation::RULE_KEY_VALIDATOR => 'stringLen',
+                Validation::RULE_KEY_VALIDATOR => 'length',
                 Validation::RULE_KEY_ERR_MSG => 'fake msg 1'
             ]
         ]);
@@ -425,7 +425,7 @@ class ValidationTest extends TestCase
 
         $sut->addRules([
             'missingAllRequiredKeys' => [
-                Validation::RULE_KEY_VALIDATOR => 'stringLen',
+                Validation::RULE_KEY_VALIDATOR => 'length',
                 Validation::RULE_KEY_CONSTRAINT => 1
             ]
         ]);
@@ -443,7 +443,7 @@ class ValidationTest extends TestCase
 
         $actual = $sut->addRules([
             'missingAllRequiredKeys' => [
-                Validation::RULE_KEY_VALIDATOR => 'stringLen',
+                Validation::RULE_KEY_VALIDATOR => 'length',
                 Validation::RULE_KEY_CONSTRAINT => 1,
                 Validation::RULE_KEY_ERR_MSG => 'err message'
             ]
@@ -558,5 +558,150 @@ class ValidationTest extends TestCase
 
         $this->assertEquals(2, $actual);
         $this->assertTrue($actual2);
+    }
+
+    /**
+     * @covers ::throwOnMissingIndex
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::validate
+     * @expectedException \Exception
+     * @expectedExceptionMessage Missing "0" index at rule index
+     */
+    public function testWillThrowOnMissingIndex()
+    {
+        $name = '$field1';
+        $fixtureRule = [ 1 => 0, 2 => 'error 1'];
+
+        $sut = new Validation();
+
+        $sut->addRulesByIndex([
+            $name => $fixtureRule
+        ]);
+    }
+
+    /**
+     * @covers ::throwOnMissingIndex
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::validate
+     * @expectedException \Exception
+     * @expectedExceptionMessage Missing "1" index at rule index
+     */
+    public function testWillThrowOnMissingIndex1()
+    {
+        $name = '$field1';
+        $fixtureRule = [ 0 => 'gt', 2 => 'error 1'];
+
+        $sut = new Validation();
+
+        $sut->addRulesByIndex([
+            $name => $fixtureRule
+        ]);
+    }
+
+    /**
+     * @covers ::throwOnMissingIndex
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::validate
+     * @expectedException \Exception
+     * @expectedExceptionMessage Missing "2" index at rule index
+     */
+    public function testWillThrowOnMissingIndex2()
+    {
+        $name = '$field1';
+        $fixtureRule = [ 0 => 'gt', 1 => 0];
+
+        $sut = new Validation();
+
+        $sut->addRulesByIndex([
+            $name => $fixtureRule
+        ]);
+    }
+
+    /**
+     * @covers ::throwOnMissingIndex
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::validate
+     */
+    public function testWillNotThrowExceptionWhenUsingOnAddRulesByIndex()
+    {
+        $name = 'field1';
+        $fixtureRule = [ 0 => 'gt', 1 => 0, 2 => 'err msg'];
+
+        $sut = new Validation();
+
+        $sut->addRulesByIndex([
+            $name => $fixtureRule
+        ]);
+
+        $actual = $sut->validate([$name => 1]);
+
+        $this->assertTrue($actual);
+    }
+
+    /**
+     * @covers ::addRules
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addCustomValidator
+     * @uses \Whip\Lash\Validation::getRule
+     * @uses \Whip\Lash\Validation::validate
+     */
+    public function testCanAddCustomRuleWhenAddingAsArray()
+    {
+        $name = 'field1';
+
+        $sut = new Validation();
+
+        $actual = $sut->addRules([
+            $name => [
+                Validation::RULE_KEY_CUSTOM => 'custom',
+                Validation::RULE_KEY_CONSTRAINT => function() {
+                    return true;
+                },
+                Validation::RULE_KEY_ERR_MSG => 'error 1'
+            ]
+        ]);
+
+        $actual2 = $sut->validate([$name => 1]);
+
+        $this->assertEquals(1, $actual);
+        $this->assertTrue($actual2);
+    }
+
+    /**
+     * @covers ::addRules
+     * @uses \Whip\Lash\Validation::__construct
+     * @uses \Whip\Lash\Validation::addRule
+     * @uses \Whip\Lash\Validation::addCustomValidator
+     * @uses \Whip\Lash\Validation::getRule
+     * @uses \Whip\Lash\Validation::validate
+     */
+    public function testWillProperlyValidateCustomRuleWhenAddedAsArray()
+    {
+        $name = 'field1';
+        $fixtureError = 'error 1';
+
+        $sut = new Validation();
+
+        $actual = $sut->addRules([
+            $name => [
+                Validation::RULE_KEY_CUSTOM => 'custom',
+                Validation::RULE_KEY_CONSTRAINT => function() {
+                    return false;
+                },
+                Validation::RULE_KEY_ERR_MSG => $fixtureError
+            ]
+        ]);
+
+        $actual2 = $sut->validate([$name => 1]);
+        $actual3 = $sut->getErrors();
+
+        $this->assertEquals(1, $actual);
+        $this->assertFalse($actual2);
+        $this->assertEquals($fixtureError, $actual3[$name]);
     }
 }

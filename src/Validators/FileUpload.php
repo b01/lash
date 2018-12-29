@@ -5,6 +5,8 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
+use Psr\Http\Message\UploadedFileInterface;
+
 /**
  * Class FileUpload
  *
@@ -13,14 +15,28 @@
 trait FileUpload
 {
     /**
+     * @param string $value
+     * @param array $constraint
+     * @return bool
+     */
+    public function upload(UploadedFileInterface $value, array $constraint) : bool
+    {
+        return $this->uploadHasExt($value, $constraint[0])
+            && $this->uploadHasSize($value, $constraint[1])
+            && $this->uploadName($value, '/^[a-zA-Z0-9._-]+$/');
+    }
+
+    /**
      * Verify a filename contains one of the expected extensions.
      *
      * @param array $extensions
      * @param string $messageKey
      * @return static
      */
-    public function uploadHasExt($value, array $constraint) : bool
-    {
+    public function uploadHasExt(
+        UploadedFileInterface $value,
+        array $constraint
+    ) : bool {
         $regex = '/(' . \implode('|', $constraint) . ')$/';
         $pattern = \trim($regex, '|');
 
@@ -33,8 +49,10 @@ trait FileUpload
      * @param string $pattern
      * @return bool
      */
-    public function uploadName($value, string $pattern) : bool
-    {
+    public function uploadName(
+        UploadedFileInterface $value,
+        string $pattern
+    ) : bool {
         $filename = \basename($value->getClientFilename());
 
         return \preg_match($pattern, $filename) === 1;
@@ -47,8 +65,10 @@ trait FileUpload
      * @param array $constraint
      * @return bool
      */
-    public function uploadHasSize($value, array $constraint) : bool
-    {
+    public function uploadHasSize(
+        UploadedFileInterface $value,
+        array $constraint
+    ) : bool {
         $fileSize = $value->getSize();
 
         return $fileSize >= $constraint[0] && $fileSize <= $constraint[1];

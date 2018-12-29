@@ -67,4 +67,24 @@ class ComparisonTest extends TestCase
 
         $this->assertFalse($actual);
     }
+
+    /**
+     * @covers ::eq
+     */
+    public function testEqualFails()
+    {
+        $actual = $this->sut->eq(1, 0);
+
+        $this->assertFalse($actual);
+    }
+
+    /**
+     * @covers ::eq
+     */
+    public function testEqualSucceeds()
+    {
+        $actual = $this->sut->eq(1, 1);
+
+        $this->assertTrue($actual);
+    }
 }

@@ -160,4 +160,28 @@ class FileUploadTest extends TestCase
 
         $this->assertTrue($actual);
     }
+
+    /**
+     * @covers ::upload
+     * @uses \Whip\Lash\Validators\FileUpload::uploadHasExt
+     * @uses \Whip\Lash\Validators\FileUpload::uploadHasSize
+     * @uses \Whip\Lash\Validators\FileUpload::uploadName
+     */
+    public function testUpload()
+    {
+        $this->mockUploadedFile->expects($this->atLeastOnce())
+            ->method('getClientFilename')
+            ->willReturn('/tmp/test.txt');
+
+        $this->mockUploadedFile->expects($this->once())
+            ->method('getSize')
+            ->willReturn(1.);
+
+        $actual = $this->sut->upload($this->mockUploadedFile, [
+            ['txt'],
+            [1, 2]
+        ]);
+
+        $this->assertTrue($actual);
+    }
 }

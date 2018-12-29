@@ -63,6 +63,22 @@ interface Validator
     public function addRules(array $rules) : int;
 
     /**
+     * Add rules via an index instead of a key. The index has a specific order:
+     * 0 = self::RULE_IDX_VALIDATOR
+     * 1 = self::RULE_IDX_CONSTRAINT
+     * 2 = self::RULE_IDX_ERR_MSG
+     * 3 = self::RULE_IDX_MASK
+     *
+     * WARNING: Please make sure your elements are in the correct order or
+     * proper validation cannot be guaranteed.
+     *
+     * @param array $rules
+     * @return int
+     * @throws \Exception
+     */
+    public function addRulesByIndex(array $rules) : int;
+
+    /**
      * Get the errors for fields that failed validation.stringLen
      *
      * @return array

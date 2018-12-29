@@ -17,8 +17,9 @@
         </whitelist>
     </filter>
     <logging>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false" />
-        <log type="coverage-clover" target="test-results/phpunit/coverage.xml" />
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="true" />
+        <log type="coverage-html" target="test-results/phpunit/report" lowUpperBound="75" highLowerBound="90"/>
+        <log type="coverage-clover" target="test-results/phpunit/coverage-clover.xml" />
         <log type="junit" target="test-results/phpunit/junit.xml" />
     </logging>
 </phpunit>

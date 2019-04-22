@@ -2,7 +2,7 @@
 /**
  * https://github.com/FriendsOfPHP/Sami
  */
-// Run: sami.phar update /code/lash/sami-config.php
+// Run: sami.phar update /code/lash/sami-config.app
 
 use Sami\Sami;
 use Symfony\Component\Finder\Finder;

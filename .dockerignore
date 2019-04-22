@@ -1,0 +1,12 @@
+# Directories
+# -----------
+/.circleci/
+/.phpunit/
+/cache/
+/vendor/
+/test-results/
+
+# Files
+# -----
+/.editorconfig
+/composer.lock

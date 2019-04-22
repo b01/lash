@@ -2,7 +2,7 @@
 /**
  * Please see the included LICENSE.txt with this source code. If no
  * LICENSE.txt was provided, then all rights for the source code in
- * this file are reserved by Khalifah Khalil Shabazz
+ * this file are reserved by Khalifah Khalil Shabazz.
  */
 
 /**
@@ -13,34 +13,33 @@
 trait Password
 {
     /**
-     * @param string|null $messageKey
-     * @return static
+     * @param string $value
+     * @param string $constraint
+     * @param array $input
+     * @return bool
+     * @throws \Exception
      */
-    public function pass(string $compare, string $messageKey) : self
+    public function password(string $value, string $constraint, & $input) : bool
     {
-        if (!\array_key_exists($compare, $this->input)) {
+        if (!\array_key_exists($constraint, $input)) {
             throw new \Exception(
-                "Could not find ${compare} field in the input."
+                "Could not find {$constraint} field in the input."
             );
         }
 
-        $confirm = $this->input[$compare];
+        $confirm = $input[$constraint];
 
         // at least 8 chars long
-        $c1 = \strlen($this->subject) >= 8;
+        $c1 = \strlen($value) >= 8;
         // at least one digit
-        $c2 = 1 === @\preg_match('/[0-9]/', $this->subject);
+        $c2 = \preg_match('/[0-9]/', $value) === 1;
         // at least one symbol;
-        $c3 = 1 === @\preg_match('/[^a-zA-Z0-9]/', $this->subject);
+        $c3 = \preg_match('/[^a-zA-Z0-9]/', $value) === 1;
         // at least one letter;
-        $c5 = 1 === @\preg_match('/[a-zA-Z]/', $this->subject);
+        $c5 = \preg_match('/[a-zA-Z]/', $value) === 1;
         // matches confirmation entry
-        $c4 = \strcmp($confirm, $this->subject) === 0;
+        $c4 = \strcmp($confirm, $value) === 0;
 
-        $isMet = $c1 && $c2 && $c3 && $c4 && $c5;
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return $c1 && $c2 && $c3 && $c4 && $c5;
     }
 }

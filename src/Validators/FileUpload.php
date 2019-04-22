@@ -5,6 +5,8 @@
  * this file are reserved by Khalifah Khalil Shabazz
  */
 
+use Psr\Http\Message\UploadedFileInterface;
+
 /**
  * Class FileUpload
  *
@@ -13,55 +15,62 @@
 trait FileUpload
 {
     /**
+     * @param string $value
+     * @param array $constraint
+     * @return bool
+     */
+    public function upload(UploadedFileInterface $value, array $constraint) : bool
+    {
+        return $this->uploadHasExt($value, $constraint[0])
+            && $this->uploadHasSize($value, $constraint[1])
+            && $this->uploadName($value, '/^[a-zA-Z0-9._-]+$/');
+    }
+
+    /**
      * Verify a filename contains one of the expected extensions.
      *
      * @param array $extensions
      * @param string $messageKey
      * @return static
      */
-    public function uploadHasExt(array $extensions, string $messageKey) : self
-    {
-        $regex = '/(' . \implode('|', $extensions) . ')$/';
+    public function uploadHasExt(
+        UploadedFileInterface $value,
+        array $constraint
+    ) : bool {
+        $regex = '/(' . \implode('|', $constraint) . ')$/';
         $pattern = \trim($regex, '|');
 
-        $isMet = \preg_match($pattern, $this->subject->getClientFilename());
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return \preg_match($pattern, $value->getClientFilename());
     }
 
     /**
+     *
+     * @param $value
      * @param string $pattern
-     * @param string $messageKey
-     * @return static
+     * @return bool
      */
-    public function uploadName(string $pattern, string $messageKey) : self
-    {
-        $filename = basename($this->subject->getClientFilename());
+    public function uploadName(
+        UploadedFileInterface $value,
+        string $pattern
+    ) : bool {
+        $filename = \basename($value->getClientFilename());
 
-        $isMet = \preg_match($pattern, $filename);
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return \preg_match($pattern, $filename) === 1;
     }
 
     /**
      * Verify a file size is within (inclusive) an expected range.
      *
-     * @param int $min Minimum file size in bytes.
-     * @param int $max Maximum file size in bytes.
-     * @param string $messageKey
-     * @return static
+     * @param $value
+     * @param array $constraint
+     * @return bool
      */
-    public function uploadHasSize(int $min, int $max, string $messageKey) : self
-    {
-        $fileSize = $this->subject->getSize();
-        $isMet = $fileSize >= $min && $fileSize <= $max;
+    public function uploadHasSize(
+        UploadedFileInterface $value,
+        array $constraint
+    ) : bool {
+        $fileSize = $value->getSize();
 
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return $fileSize >= $constraint[0] && $fileSize <= $constraint[1];
     }
 }

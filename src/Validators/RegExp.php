@@ -2,76 +2,42 @@
 /**
  * Please see the included LICENSE.txt with this source code. If no
  * LICENSE.txt was provided, then all rights for the source code in
- * this file are reserved by Khalifah Khalil Shabazz
+ * this file are reserved by Khalifah Khalil Shabazz.
  */
 
 /**
- * Trait RegExp
+ * Class RegExp
  *
- * @package \Whip\Lash\Validators
+ * @package Whip\Lash\Validators
  */
 trait RegExp
 {
     /**
-     * @param string|null $messageKey
-     * @return static
-     */
-    public function email(string $messageKey) : self
-    {
-        // see: https://www.w3.org/TR/2012/WD-html-markup-20120320/input.email.html
-        $exp = '/^[a-zA-Z0-9.!#$%&’*+\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/';
-
-        return $this->regExp($exp, $messageKey);
-    }
-
-    /**
-     * @param string|null $messageKey
-     * @return static
-     */
-    public function name(string $messageKey) : self
-    {
-        return $this->regExp('/^[a-zA-Z]+$/', $messageKey);
-    }
-
-    /**
-     * @param string|null $messageKey
-     * @return static
-     */
-    public function username(string $messageKey) : self
-    {
-        return $this->regExp(
-            '/^[a-zA-Z][a-zA-Z0-9]{3,26}$/',
-            $messageKey
-        );
-    }
-
-    /**
-     * Assert with a regular expression.
-     *
-     * @param string $pattern
-     * @param string $messageKey Error message key to lookup in the list of error messages.
-     * @return static
+     * @param string $value
+     * @param string $constraint
+     * @return bool
      * @throws \Exception
      */
-    public function regExp(string $pattern, string $messageKey) : self
+    private function regex(string $value, string $constraint)
     {
-        $result = @\preg_match($pattern, $this->subject);
-
-        if ($result === false) {
+        try {
+            $rV = \preg_match($constraint, $value);
+        } catch (\Exception $err) {
+            $errMsg = $err->getMessage();
             // Get the name of the constant for the error code.
-            $errorConstName = \array_flip(\get_defined_constants(true)['pcre'])[\preg_last_error()];
-            $errorMessage = 'There may is a problem with the regex, and the'
+            $pcreConst = \get_defined_constants(true)['pcre'];
+            $lastErr = \preg_last_error();
+            $errorConstName = \array_flip($pcreConst)[$lastErr];
+            $message = 'There may is a problem with the regex, and the'
                 . " subject cannot be validated.\n"
                 . "\tregex error: {$errorConstName}\n"
-                . "\tsubject: {$this->subject}\n"
-                . "\tpattern: {$pattern}";
-            throw new \Exception($errorMessage);
+                . "\tsubject: {$value}\n"
+                . "\tpattern: {$constraint}"
+                . "\terror message: {$errMsg}";
+
+            throw new \Exception($message);
         }
 
-        $isMet = $result === 1;
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return $rV === 1;
     }
 }

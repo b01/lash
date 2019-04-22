@@ -23,86 +23,75 @@ class PasswordTest extends TestCase
     public function setUp()
     {
         $this->sut = $this->getMockBuilder(Password::class)
-            ->setMethods(['check'])
             ->getMockForTrait();
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      */
     public function testCanPass()
     {
         $passwordFixture = 'abcdefg1!';
 
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+        $input = ['confirm' => $passwordFixture];
 
-        $this->sut->input = ['confirm' => $passwordFixture];
-        $this->sut->subject = $passwordFixture;
+        $actual = $this->sut->password($passwordFixture, 'confirm', $input);
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $this->assertTrue($actual);
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      */
     public function testCanFailWhenNotLongEnough()
     {
         $passwordFixture = 'a';
 
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $input = ['confirm' => $passwordFixture];
 
-        $this->sut->input = ['confirm' => $passwordFixture];
-        $this->sut->subject = $passwordFixture;
+        $actual = $this->sut->password($passwordFixture, 'confirm', $input);
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      */
     public function testCanFailWhenNotContainNumber()
     {
         $passwordFixture = 'abcdefg!';
 
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $input = ['confirm' => $passwordFixture];
 
-        $this->sut->input = ['confirm' => $passwordFixture];
-        $this->sut->subject = $passwordFixture;
+        $actual = $this->sut->password($passwordFixture, 'confirm', $input);
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      */
     public function testCanFailWhenNotContainSymbol()
     {
         $passwordFixture = 'abcdefg1';
 
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $input = ['confirm' => $passwordFixture];
 
-        $this->sut->input = ['confirm' => $passwordFixture];
-        $this->sut->subject = $passwordFixture;
+        $actual = $this->sut->password($passwordFixture, 'confirm', $input);
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
-     * @covers ::pass
+     * @covers ::password
      * @expectedException \Exception
      */
     public function testCanThrowException()
     {
-        $this->sut->input = [];
+        $input = [];
 
-        $this->sut->pass('confirm', __FUNCTION__);
+        $actual = $this->sut->password('wqre', 'confirm', $input);
+
+        $this->assertFalse($actual);
     }
 }

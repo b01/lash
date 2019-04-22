@@ -12,41 +12,35 @@
  */
 trait File
 {
+    use RegExp;
+
     /**
      * Verify a filename contains one of the expected extensions.
      *
      * @param array $extensions
      * @param string $messageKey
-     * @return static
+     * @return bool
      */
-    public function fileExt(array $extensions, string $messageKey) : self
+    public function fileExt($value, array $constraint) : bool
     {
-        $regex = '/(' . \implode('|', $extensions) . ')$/';
+        $regex = '/(' . \implode('|', $constraint) . ')$/';
         $pattern = \trim($regex, '|');
 
-        $isMet = \preg_match($pattern, $this->subject);
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return \preg_match($pattern, $value) === 1;
     }
 
     /**
      * Verify a file size is within (inclusive) an expected range.
      *
-     * @param int $min Minimum file size in bytes.
-     * @param int $max Maximum file size in bytes.
-     * @param string $messageKey
-     * @return static
+     * @param string $value path to a file.
+     * @param array $constraint the min and Maximum file size in bytes.
+     * @return bool
      */
-    public function fileSize(int $min, int $max, string $messageKey) : self
+    public function fileSize(string $value, $constraint) : bool
     {
-        $stats = stat($this->subject);
-        $filesize = $stats['size'];
-        $isMet = $filesize >= $min && $filesize <= $max;
+        $stats = \stat($value);
+        $fileSize = $stats['size'];
 
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return $fileSize >= $constraint[0] && $fileSize <= $constraint[1];
     }
 }

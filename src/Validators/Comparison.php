@@ -13,34 +13,38 @@
 trait Comparison
 {
     /**
-     * Verify that the subject is greater than an expected value.
+     * Verify that the value is equal to an expected value.
      *
      * @param $value
-     * @param string $messageKey
-     * @return static
+     * @param $constraint
+     * @return bool
      */
-    public function greaterThan($value, string $messageKey) : self
+    public function eq($value, $constraint) : bool
     {
-        $isMet = $this->subject > $value;
+        return $value === $constraint;
+    }
 
-        $this->check($isMet, $messageKey);
-
-        return $this;
+    /**
+     * Verify that the value is greater than an expected value.
+     *
+     * @param $value
+     * @param $constraint
+     * @return bool
+     */
+    public function gt($value, $constraint) : bool
+    {
+        return $value > $constraint;
     }
 
     /**
      * Verify the subject is less than an expected value.
      *
      * @param $value
-     * @param string $messageKey
-     * @return static
+     * @param string $constraint
+     * @return bool
      */
-    public function lessThan($value, string $messageKey) : self
+    public function lt($value, $constraint) : bool
     {
-        $isMet = $this->subject < $value;
-
-        $this->check($isMet, $messageKey);
-
-        return $this;
+        return $value < $constraint;
     }
 }

@@ -3,10 +3,10 @@ end_of_line = lf
 insert_final_newline = false
 max_line_length = 120
 
-[*.txt, *.md]
+[*.{txt,md}]
 trim_trailing_whitespace = false
 
-[*.{html,php}]
+[*.{html,php,json}]
 charset = utf-8
 indent_style = space
 tab_width = 4

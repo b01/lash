@@ -20,17 +20,20 @@
     "license": "MIT",
     "name": "kshabazz/whip-lash",
     "require": {
-        "php": ">=7.0"
+        "php": ">=7.2"
     },
     "require-dev": {
         "phpmd/phpmd": "^2.0",
+        "phpstan/phpstan": "^0.10",
+        "phpunit/phpunit": "^7.0",
         "psr/http-message": "^1.0",
-        "phpunit/phpunit": "^6.0",
         "squizlabs/php_codesniffer": "^2.0"
     },
     "scripts": {
         "units": "phpunit",
         "pcs": "phpcs -p --standard=PSR2 --severity=8 --colors src",
-        "pmd": "phpmd src text cleancode --strict"
+        "pmd": "phpmd src text cleancode --strict",
+        "sami": "sami.phar update ./sami-config.php",
+        "test": "composer run pcs && composer run pmd && composer run units"
     }
 }

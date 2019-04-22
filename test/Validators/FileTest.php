@@ -24,7 +24,6 @@ class FileTest extends TestCase
     public function setUp()
     {
         $this->sut = $this->getMockBuilder(File::class)
-            ->setMethods(['check'])
             ->getMockForTrait();
     }
 
@@ -33,13 +32,11 @@ class FileTest extends TestCase
      */
     public function testFileEndsWithTheExpectedExtension()
     {
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+        $fileFixture = FIXTURES_DIR . 'file_1.txt';
 
-        $this->sut->subject = FIXTURES_DIR . 'file_1.txt';
+        $actual = $this->sut->fileExt($fileFixture, ['txt']);
 
-        $this->sut->fileExt(['txt'],  __FUNCTION__);
+        $this->assertTrue($actual);
     }
 
     /**
@@ -47,13 +44,11 @@ class FileTest extends TestCase
      */
     public function testFileDoesNotEndWithTheExpectedExtension()
     {
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $fileFixture = FIXTURES_DIR . 'file_1.txt';
 
-        $this->sut->subject = FIXTURES_DIR . 'file_1.txt';
+        $actual = $this->sut->fileExt($fileFixture, ['php']);
 
-        $this->sut->fileExt(['php'],  __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
@@ -61,13 +56,11 @@ class FileTest extends TestCase
      */
     public function testFileContainsExtensionButDoesNotEndWithWithIt()
     {
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(false), $this->equalTo(__FUNCTION__));
+        $fixture = FIXTURES_DIR . 'file_.php.txt';
 
-        $this->sut->subject = FIXTURES_DIR . 'file_.php.txt';
+        $actual = $this->sut->fileExt($fixture, ['php']);
 
-        $this->sut->fileExt(['php'],  __FUNCTION__);
+        $this->assertFalse($actual);
     }
 
     /**
@@ -75,12 +68,10 @@ class FileTest extends TestCase
      */
     public function testFileSizeCanPass()
     {
-        $this->sut->expects($this->once())
-            ->method('check')
-            ->with($this->equalTo(true), $this->equalTo(__FUNCTION__));
+        $fixture = FIXTURES_DIR . 'file_1.txt';
 
-        $this->sut->subject = FIXTURES_DIR . 'file_1.txt';
+        $actual = $this->sut->fileSize($fixture, [1, 8]);
 
-        $this->sut->fileSize(1, 8,  __FUNCTION__);
+        $this->assertTrue($actual);
     }
 }

@@ -1,0 +1,37 @@
+version: '3.5'
+
+services:
+
+    nginx:
+        container_name: 'lash-web'
+        image: 'lash-web'
+        build:
+            dockerfile: 'docker/web/Dockerfile'
+            context: '..'
+        working_dir: '/lash/'
+        networks:
+            lash:
+                aliases:
+                    - 'lash_web'
+        volumes:
+          - '../:/lash/'
+        ports:
+          - '80:80'
+          - '443:443'
+
+    php-fpm:
+        container_name: 'lash-app'
+        image: 'lash-app'
+        build:
+            dockerfile: 'docker/app/Dockerfile'
+            context: '..'
+        working_dir: '/lash/'
+        networks:
+            lash:
+                aliases:
+                    - 'lash_app'
+        volumes:
+          - '../:/lash/'
+
+networks:
+    lash:

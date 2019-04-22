@@ -15,12 +15,12 @@ RUN chmod +x ./get-composer.sh \
     php7-mbstring \
     php7-mcrypt \
     php7-openssl \
-    php7-pdo \
     php7-phar \
     php7-session \
     php7-simplexml \
-    php7-sodium \
     php7-tokenizer \
+    php7-xdebug \
+    php7-xml \
     php7-xmlreader \
     php7-xmlwriter \
  && ./get-composer.sh \

@@ -1,4 +1,4 @@
-FROM nginx:1-alpine
+FROM alpine:3.9
 
 # Add helper files.
 COPY ./docker/web/custom-nginx.conf /etc/nginx/
@@ -6,6 +6,7 @@ COPY ./docker/web/generate-self-signed-cert.sh /bin/
 
 # Install some dependencies.
 RUN apk --update add --no-cache \
+    nginx \
     openssl \
  && chmod a+x /bin/generate-self-signed-cert.sh \
  && generate-self-signed-cert.sh \

@@ -198,7 +198,8 @@ final class Validation implements Validator
                 $callable = [$this, $validator];
             } else if (\array_key_exists($validator, $this->customValidators)) {
                 $callable = $this->customValidators[$validator];
-            } else {
+            }
+            if (!isset($callable)) {
                 throw new \Exception("Could not find the validator \"{$validator}\"");
             }
 
